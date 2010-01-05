@@ -1,0 +1,48 @@
+. ${lxc_GLOBAL_FUNCTIONS}
+
+#Mirror for ubuntu
+lxc_CACHE_MIRROR="http://ftp.free.fr/mirrors/ftp.ubuntu.com/ubuntu"
+
+#Set vars
+lxc_CACHE_ROOTFS="${lxc_GLOBAL_CACHE_HOME}/$lxc_CACHE_DISTRIB-${lxc_CACHE_RELEASE}-${lxc_CACHE_ARCH}"
+lxc_CACHE_TMPROOTFS="${lxc_CACHE_ROOTFS}.tmp"
+
+#Packages to install at bootstrap time
+lxc_CACHE_PKGSUPP="ifupdown,netbase,net-tools,iproute,openssh-server,gnupg,sysklogd"
+
+#Services to disable
+lxc_CACHE_DISSVC="umountfs hwclock.sh hwclockfirst.sh checkroot.sh"
+
+lxc_CACHE_ACTIONS="\
+cache_prepare.sh \
+debian.debootstrap.sh \
+debian.inittab.sh \
+mkfstab.sh \
+debian.selinux.sh \
+debian.disable_services.sh \
+initial_resolver.sh \
+debian.reconfigure_packages.sh"
+
+#Release specific stuff 
+case "${lxc_CACHE_RELEASE}" in
+	"hardy") ;;
+	"intrepid") ;;
+	"jaunty")
+	#Disable udev
+	lxc_CACHE_DISSVC="${lxc_CACHE_DISSVC} udev"
+	lxc_CACHE_ACTIONS="${lxc_CACHE_ACTIONS} ubuntu.jaunty.varrunnetwork.sh"
+;;
+	"karmic")
+		#Karmic have a different syslog daemon
+		lxc_CACHE_PKGSUPP="${lxc_CACHE_PKGSUPP/sysklogd/rsyslog}"
+		lxc_CACHE_ACTIONS="${lxc_CACHE_ACTIONS/debian.inittab.sh/ubuntu.karmic.init.sh}"
+		lxc_CACHE_ACTIONS="${lxc_CACHE_ACTIONS/mkfstab.sh/ubuntu.karmic.mkfstab.sh ubuntu.karmic.rootlogin.sh}"
+#		die "Sorry Karmic isn't compatible with LXC for now" 
+		;;
+	*) die "unknow release : ${lxc_CACHE_RELEASE}" ;;
+esac
+
+#Make vars exported
+export ${!lxc_*}
+
+# vim: ft=sh

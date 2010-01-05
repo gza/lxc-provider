@@ -1,0 +1,28 @@
+#template for a minimal vanilla ubuntu container
+
+#Compose some useful vars
+lxc_CONTAINER_ROOTFS="${lxc_GLOBAL_ROOTFS_HOME}/${lxc_CONTAINER_NAME}"
+lxc_CONTAINER_LXC_CONF="${lxc_GLOBAL_TMP_HOME}/${lxc_CONTAINER_NAME}/lxc.conf"
+lxc_CONTAINER_FSTAB="${lxc_GLOBAL_TMP_HOME}/${lxc_CONTAINER_NAME}/fstab"
+
+#Actions to execute in order to create the container
+lxc_TEMPLATE_ACTIONS="create_dirs.sh \
+copy_from_cache.sh \
+create_lxc_conf.sh \
+update_hostname.sh \
+debian.networking.sh \
+passwd.sh \
+create_lxc.sh"
+
+#Network configuration template
+lxc_TEMPLATE_NETCONF="${lxc_GLOBAL_DEFAULT_TEMPLATE_NETCONF}"
+
+#Authentification
+lxc_CONTAINER_PASSWD="${lxc_CONTAINER_PASSWD:-${lxc_GLOBAL_DEFAULT_PASSWD}}"
+lxc_CONTAINER_SSHPUBKEY="${lxc_CONTAINER_SSHPUBKEY:-${lxc_GLOBAL_DEFAULT_SSHPUBKEY}}"
+lxc_CONTAINER_NOPASSWD="${lxc_CONTAINER_NOPASSWD:-${lxc_GLOBAL_DEFAULT_NOPASSWD}}"
+
+#Make vars exported
+export ${!lxc_*}
+
+# vim: ft=sh

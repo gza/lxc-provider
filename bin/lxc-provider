@@ -1,0 +1,74 @@
+#!/bin/bash
+
+. /lxc/etc/lxc-provider.conf
+. ${lxc_GLOBAL_FUNCTIONS}
+
+export lxc_DEFAULT_CACHE_NAME="${lxc_GLOBAL_DEFAULT_DISTRIB}-${lxc_GLOBAL_DEFAULT_RELEASE}-${lxc_GLOBAL_DEFAULT_ARCH}"
+
+localusage(){
+	echo "Usage:"
+	echo "$0 create [options]"
+	echo -e "creates a container"
+	echo "options:"
+	echo -e "(default)\t-t ${lxc_GLOBAL_DEFAULT_TEMPLATE}"
+	echo -e "\t\t\tTemplate to use"
+	echo -e "(default)\t-c ${lxc_DEFAULT_CACHE_NAME}"
+	echo -e "\t\t\tCached OS to use"
+	echo -e "(must be provided)\t-i \$ipaddr"
+	echo -e "\t\t\tIP address"
+	echo -e "(must be provided)\t-n \$name"
+	echo -e "\t\t\tName of the vps"
+	echo '##'
+	echo "$0 debuginfo [options]"
+	echo "display all env vars related to lxc-provider"
+	echo "options: same as create"
+
+	exit 0
+}
+
+OPTIND=2
+while getopts "t:i:n:c:h" option; do
+	echo "$option ${OPTARG}"
+	case "$option" in
+        	h) localusage ;;
+                i) lxc_CONTAINER_IP="${OPTARG}" ;;
+                n) lxc_CONTAINER_NAME="${OPTARG}" ;;
+                c) lxc_CACHE_NAME="${OPTARG}" ;;
+		t) lxc_TEMPLATE="${OPTARG}" ;; 
+                *) localusage ;;
+        esac
+done
+
+export lxc_TEMPLATE=${lxc_TEMPLATE:-${lxc_GLOBAL_DEFAULT_TEMPLATE}}
+export lxc_CACHE_NAME=${lxc_CACHE_NAME:-${lxc_DEFAULT_CACHE_NAME}}
+export lxc_TEMPLATE_CONFFILE="${lxc_GLOBAL_ETC_HOME}/templates/${lxc_TEMPLATE}"
+export lxc_TEMPLATE_CACHE_SOURCE="${lxc_GLOBAL_CACHE_HOME}/${lxc_CACHE_NAME}"
+export lxc_CONTAINER_IP lxc_CONTAINER_NAME lxc_CACHE_NAME lxc_TEMPLATE
+
+. ${lxc_TEMPLATE_CONFFILE} || dir "Unable to load conf : ${lxc_TEMPLATE_CONFFILE}"
+
+
+
+f_create() {
+	for script in ${lxc_TEMPLATE_ACTIONS}
+	do
+		echo "Executing ${script}"
+		${lxc_GLOBAL_INSTALL_HELPERS}/${script} || die "${script} failed"
+	done
+}
+
+f_debuginfo() {
+	for var in ${!lxc_*}
+	do
+		echo -e "${var}=${color_Yellow}${!var}${color_None}"
+	done
+}
+
+case $1 in
+	create) f_create ;;
+	debuginfo) f_debuginfo ;;	
+	*) localusage ;;
+esac
+
+exit 0
+
