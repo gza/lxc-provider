@@ -1,17 +1,17 @@
 . ${lxc_GLOBAL_FUNCTIONS}
 
 #Mirror for ubuntu
-lxc_CACHE_MIRROR="http://ftp.free.fr/mirrors/ftp.ubuntu.com/ubuntu"
+lxc_CACHE_MIRROR="http://archive.ubuntu.com/ubuntu"
 
 #Set vars
 lxc_CACHE_ROOTFS="${lxc_GLOBAL_CACHE_HOME}/$lxc_CACHE_DISTRIB-${lxc_CACHE_RELEASE}-${lxc_CACHE_ARCH}"
 lxc_CACHE_TMPROOTFS="${lxc_CACHE_ROOTFS}.tmp"
 
 #Packages to install at bootstrap time
-lxc_CACHE_PKGSUPP="ifupdown,netbase,net-tools,iproute,openssh-server,gnupg,sysklogd"
+lxc_CACHE_PKGSUPP="ifupdown,netbase,net-tools,iproute,openssh-server,gnupg,sysklogd,language-pack-en"
 
 #Services to disable
-lxc_CACHE_DISSVC="umountfs hwclock.sh hwclockfirst.sh checkroot.sh"
+lxc_CACHE_DISSVC="umountfs hwclock.sh hwclockfirst.sh checkroot.sh klogd"
 
 lxc_CACHE_ACTIONS="\
 cache_prepare.sh \
@@ -21,7 +21,8 @@ mkfstab.sh \
 debian.selinux.sh \
 debian.disable_services.sh \
 initial_resolver.sh \
-debian.reconfigure_packages.sh"
+debian.setlocale.sh \
+debian.reconfigure_locales.sh"
 
 #Release specific stuff 
 case "${lxc_CACHE_RELEASE}" in
