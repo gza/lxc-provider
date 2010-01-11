@@ -31,6 +31,7 @@ done
 cat > ${ROOTFS}/etc/init/lxc.conf <<EOF
 start on startup
 script
+	>/etc/mtab
 	mount -a
         initctl emit virtual-filesystems
 	initctl emit local-filesystems
@@ -39,19 +40,19 @@ script
 end script
 EOF
 
-patch -p1 -d "${ROOTFS}/etc/init" << EOF
---- ubuntu-karmic-amd64/etc/init/networking.conf	2009-09-14 23:06:02.000000000 +0200
-+++ karmic/etc/init/networking.conf	2010-01-11 22:38:15.000000000 +0100
+patch -p0 -d "${ROOTFS}" << EOF
+--- etc/init/networking.conf.old	2010-01-11 23:45:12.572772953 +0100
++++ etc/init/networking.conf	2010-01-11 23:45:44.136845540 +0100
 @@ -5,8 +5,7 @@
  
-  description	"configure virtual network devices"
-   
-   -start on (local-filesystems
-   -	  and stopped udevtrigger)
-   +start on local-filesystems
-    
-     task
-
+ description	"configure virtual network devices"
+ 
+-start on (local-filesystems
+-	  and stopped udevtrigger)
++start on local-filesystems
+ 
+ task
+ 
 EOF
 echo "upstart initiated: not verified"
 exit 0
