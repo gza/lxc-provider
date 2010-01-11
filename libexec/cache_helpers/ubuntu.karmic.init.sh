@@ -39,7 +39,7 @@ script
 end script
 EOF
 
-patch -p1 -d "${ROOT}/etc/init" << EOF
+patch -p1 -d "${ROOTFS}/etc/init" << EOF
 --- ubuntu-karmic-amd64/etc/init/networking.conf	2009-09-14 23:06:02.000000000 +0200
 +++ karmic/etc/init/networking.conf	2010-01-11 22:38:15.000000000 +0100
 @@ -5,8 +5,7 @@
