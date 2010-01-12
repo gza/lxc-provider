@@ -1,6 +1,6 @@
 Name:	 lxc-provider
 Date:    Jan 2 2010
-Version: 0.1 (alpha stage)
+Version: 0.2 (alpha stage)
 License:	LGPL as lxc-debian from original lxc package
 Description :
 	This suite of scripts and configuration files helps you make "ready to run" containers.
