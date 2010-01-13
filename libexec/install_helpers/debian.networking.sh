@@ -4,7 +4,7 @@
 . ${lxc_GLOBAL_FUNCTIONS}
 . ${lxc_TEMPLATE_NETCONF} || die "enable to load ${lxc_TEMPLATE_NETCONF}"
 
-needed_var_check "lxc_CONTAINER_ROOTFS lxc_CONTAINER_IP lxc_TEMPLATE_NETCONF lxc_CONTAINER_GATEWAY lxc_CONTAINER_NETMASK lxc_CONTAINER_MTU"
+needed_var_check "lxc_CONTAINER_ROOTFS lxc_CONTAINER_IP lxc_TEMPLATE_NETCONF lxc_CONTAINER_GATEWAY lxc_CONTAINER_NETMASK lxc_CONTAINER_MTU lxc_CONTAINER_NAME"
 
 [[ -d ${lxc_CONTAINER_ROOTFS}/etc/network ]] || die "enable to find ${lxc_CONTAINER_ROOTFS}/etc/network"
 
@@ -24,3 +24,8 @@ if [[ ! -d "${lxc_CONTAINER_ROOTFS}/var/run/network" ]]
 then
 	mkdir -p "${lxc_CONTAINER_ROOTFS}/var/run/network" || die "unable to create ${lxc_CONTAINER_ROOTFS}/var/run/network dir"
 fi
+
+cat <<EOF > ${lxc_CONTAINER_ROOTFS}/etc/hosts
+127.0.0.1 localhost
+${lxc_CONTAINER_IP} ${lxc_CONTAINER_NAME}
+EOF
