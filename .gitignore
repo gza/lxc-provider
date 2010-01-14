@@ -1,4 +1,4 @@
 /cache/*
 /tmp/*
 /root/*
-
+/lost+found/*
