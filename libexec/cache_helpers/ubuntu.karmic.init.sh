@@ -6,7 +6,7 @@ ROOTFS=${lxc_CACHE_TMPROOTFS}
 
 [[ -d $ROOTFS/etc/ ]] || die "$ROOTFS/etc/ dir not found"
 
-init_to_delete="
+init_to_divert="
 /etc/init/control-alt-delete.conf
 /etc/init/hwclock.conf
 /etc/init/hwclock-save.conf
@@ -21,14 +21,19 @@ init_to_delete="
 /etc/init/tty4.conf
 /etc/init/tty5.conf
 /etc/init/tty6.conf
-/etc/init/upstart-udev-bridge.conf"
+/etc/init/upstart-udev-bridge.conf
+/etc/init/networking.conf
+"
 
-for File in $init_to_delete
+for File in $init_to_divert
 do
-	rm -f "${ROOTFS}/$File"
+	chroot ${ROOTFS} dpkg-divert --rename "$File"
 done
 
 cat > ${ROOTFS}/etc/init/lxc.conf <<EOF
+# lxc - provide some workaround to make upstart to work with lxc
+# Guillaume ZITTA
+
 start on startup
 script
 	>/etc/mtab
@@ -40,20 +45,21 @@ script
 end script
 EOF
 
-patch -p0 -d "${ROOTFS}" << EOF
---- etc/init/networking.conf.old	2010-01-11 23:45:12.572772953 +0100
-+++ etc/init/networking.conf	2010-01-11 23:45:44.136845540 +0100
-@@ -5,8 +5,7 @@
- 
- description	"configure virtual network devices"
- 
--start on (local-filesystems
--	  and stopped udevtrigger)
-+start on local-filesystems
- 
- task
- 
+cat > ${ROOTFS}/etc/init/networking.conf << EOF
+# networking - configure virtual network devices
+#
+# This task causes virtual network devices that do not have an associated
+# kernel object to be started on boot.
+# Modified by lxc-provider
+description	"configure virtual network devices"
+
+start on local-filesystems
+
+task
+
+exec ifup -a
 EOF
+
 echo "upstart initiated: not verified"
 exit 0
 
