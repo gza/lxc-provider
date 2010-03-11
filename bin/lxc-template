@@ -1,0 +1,80 @@
+#!/bin/bash
+
+
+Conf=/lxc/etc/general.conf
+. ${Conf}
+. ${lxc_PATH_LIBEXEC}/functions.sh
+
+if [[ -z $2 ]]
+then
+	template=${lxc_DEFAULT_VPS}
+else
+	template=$2
+fi
+
+localusage() {
+	myname=$(basename $0)
+	echo "Usage:"
+	echo "${myname} create rootdistro/distro/release[/specif/../..] [ARCH]: creates template"
+	echo "${myname} list : lists available templates"
+	echo "${myname} listconf : lists possible templates"
+	echo "${myname} destroy rootdistro/distro/release[/specif/../..] ARCH  : deletes template"
+	echo "${myname} debuginfo rootdistro/distro/release[/specif/../..] : shows env vars used by scripts"
+	exit 0
+}
+
+eval "$(${lxc_PATH_LIBEXEC}/cfg_parse.sh ${Conf} templating ${template})" 
+
+lxc_TMP_ROOTFS="${lxc_PATH_TMP}/templating/${template}/${lxc_ARCH}"
+
+#Exploding string
+string=${template}
+oldIFS=$IFS
+IFS=/
+template_array=( $string )
+IFS=$oldIFS
+
+lxc_RELEASE=${template_array[2]}
+lxc_TEMPLATE_ROOTFS="${lxc_PATH_TEMPLATE}/${template}/${lxc_ARCH}"
+
+export lxc_TMP_ROOTFS lxc_RELEASE lxc_TEMPLATE_ROOTFS
+
+f_create() {
+	mkdir -p ${lxc_TMP_ROOTFS}
+	for script in $(${lxc_PATH_LIBEXEC}/get_scripts.sh ${Conf} templating ${template})
+	do
+		echo "Executing ${script}"
+		${script} || die "${script} failed"
+	done
+	 
+	#OK commit cache
+	mkdir -p ${lxc_TEMPLATE_ROOTFS}
+	rm -rf ${lxc_TEMPLATE_ROOTFS}
+	mv "${lxc_TMP_ROOTFS}" "${lxc_TEMPLATE_ROOTFS}" || die "mv ${lxc_TMP_ROOTFS} ${lxc_TEMPLATE_ROOTFS} failed"
+}
+
+f_list() {
+	ls -lah ${lxc_GLOBAL_CACHE_HOME}
+}
+
+f_destroy() {
+	echo "Not implemented, rm directly from ${lxc_GLOBAL_CACHE_HOME}"
+}
+
+f_debuginfo() {
+	for var in ${!lxc_*}
+	do
+		echo -e "${var}=${color_Yellow}${!var}${color_None}"
+	done
+}
+
+case $1 in
+	create) 	f_create ;;
+	list)		f_list ;;
+	destroy)	f_destroy ;;
+	debuginfo)	f_debuginfo ;;	
+	*) localusage ;;
+esac
+
+exit 0
+

@@ -1,60 +1,89 @@
 #!/bin/bash
 
-. /lxc/etc/lxc-provider.conf
-. ${lxc_GLOBAL_FUNCTIONS}
 
-export lxc_DEFAULT_CACHE_NAME="${lxc_GLOBAL_DEFAULT_DISTRIB}-${lxc_GLOBAL_DEFAULT_RELEASE}-${lxc_GLOBAL_DEFAULT_ARCH}"
+Conf=/lxc/etc/general.conf
+. ${Conf}
+. ${lxc_PATH_LIBEXEC}/functions.sh
 
-localusage(){
+if [[ -z $2 ]]
+then
+	container=${lxc_DEFAULT_VPS}
+else
+	container=$2
+fi
+
+localusage() {
+	myname=$(basename $0)
 	echo "Usage:"
-	echo "$0 create [options]"
-	echo -e "creates a container"
-	echo "options:"
-	echo -e "(default)\t-t ${lxc_GLOBAL_DEFAULT_TEMPLATE}"
-	echo -e "\t\t\tTemplate to use"
-	echo -e "(default)\t-c ${lxc_DEFAULT_CACHE_NAME}"
-	echo -e "\t\t\tCached OS to use"
-	echo -e "(must be provided)\t-i \$ipaddr"
-	echo -e "\t\t\tIP address"
-	echo -e "(must be provided)\t-n \$name"
-	echo -e "\t\t\tName of the vps"
-	echo '##'
-	echo "$0 debuginfo [options]"
-	echo "display all env vars related to lxc-provider"
-	echo "options: same as create"
-
+	echo "${myname} create rootdistro/distro/release[/specif/../..] [-a ARCH] [-i IP] -n NAME : creates container"
+	echo "${myname} list : lists available containers"
+	echo "${myname} listconf : lists possible containers"
+	echo "${myname} destroy rootdistro/distro/release[/specif/../..] -a ARCH  : deletes template"
+	echo "${myname} debuginfo rootdistro/distro/release[/specif/../..] [-a ARCH] [-i IP] -n NAME : shows env vars used by scripts"
 	exit 0
 }
 
-OPTIND=2
-while getopts "t:i:n:c:h" option; do
-	echo "$option ${OPTARG}"
-	case "$option" in
-        	h) localusage ;;
+OPTIND=3
+while getopts "a:i:n:h" option; do
+        echo "$option ${OPTARG}"
+        case "$option" in
+                h) localusage ;;
                 i) lxc_CONTAINER_IP="${OPTARG}" ;;
                 n) lxc_CONTAINER_NAME="${OPTARG}" ;;
-                c) lxc_CACHE_NAME="${OPTARG}" ;;
-		t) lxc_TEMPLATE="${OPTARG}" ;; 
+                a) ARCH="${OPTARG}" ;;
                 *) localusage ;;
         esac
 done
 
-export lxc_TEMPLATE=${lxc_TEMPLATE:-${lxc_GLOBAL_DEFAULT_TEMPLATE}}
-export lxc_CACHE_NAME=${lxc_CACHE_NAME:-${lxc_DEFAULT_CACHE_NAME}}
-export lxc_TEMPLATE_CONFFILE="${lxc_GLOBAL_ETC_HOME}/templates/${lxc_TEMPLATE}"
-export lxc_TEMPLATE_CACHE_SOURCE="${lxc_GLOBAL_CACHE_HOME}/${lxc_CACHE_NAME}"
-export lxc_CONTAINER_IP lxc_CONTAINER_NAME lxc_CACHE_NAME lxc_TEMPLATE
-
-. ${lxc_TEMPLATE_CONFFILE} || dir "Unable to load conf : ${lxc_TEMPLATE_CONFFILE}"
+eval "$(${lxc_PATH_LIBEXEC}/cfg_parse.sh ${Conf} provisionning ${template})"
+[[ -n $ARCH ]] && lxc_ARCH=$ARCH
 
 
+
+#Exploding string
+string=${container}
+oldIFS=$IFS
+IFS=/
+container_array=( $string )
+IFS=$oldIFS
+
+lxc_RELEASE=${container_array[2]}
+
+lxc_CONTAINER_ROOTFS="${lxc_PATH_ROOTFS}/${lxc_CONTAINER_NAME}"
+lxc_TMP_ROOTFS="${lxc_PATH_TMP}/provisionning/${lxc_CONTAINER_NAME}"
+lxc_TMP_CONFIGDIR="${lxc_PATH_TMP}/provisionning/${lxc_CONTAINER_NAME}-config"
+lxc_TEMPLATE_ROOTFS="${lxc_PATH_TEMPLATE}/${container}/${lxc_ARCH}"
+export ${!lxc_*}
 
 f_create() {
-	for script in ${lxc_TEMPLATE_ACTIONS}
+	[[ -d ${lxc_TEMPLATE_ROOTFS} ]] || die "The template ${lxc_TEMPLATE_ROOTFS} is not available"
+	[[ -d ${lxc_CONTAINER_ROOTFS} ]] && die "Rootfs dir ${lxc_CONTAINER_ROOTFS} already exists"
+
+	#@TODO make overwrite of the TMP_ROOTFS an option
+	mkdir -p ${lxc_TMP_ROOTFS} && rm -rf ${lxc_TMP_ROOTFS}
+	cp -a ${lxc_TEMPLATE_ROOTFS} ${lxc_TMP_ROOTFS} || die "cp -a ${lxc_TEMPLATE_ROOTFS} ${lxc_TMP_ROOTFS} : failed"
+	[[ -d ${lxc_TMP_CONFIGDIR} ]] || rm -rf ${lxc_TMP_CONFIGDIR}
+	mkdir -p ${lxc_TMP_CONFIGDIR}
+	
+	for script in $(${lxc_PATH_LIBEXEC}/get_scripts.sh ${Conf} provisionning ${container})
 	do
 		echo "Executing ${script}"
-		${lxc_GLOBAL_INSTALL_HELPERS}/${script} || die "${script} failed"
+		${script} || die "${script} failed"
 	done
+	 
+	#OK commit cache
+	mkdir -p ${lxc_CONTAINER_ROOTFS}
+	rm -rf ${lxc_CONTAINER_ROOTFS}
+	mv "${lxc_TMP_ROOTFS}" "${lxc_CONTAINER_ROOTFS}" || die "mv ${lxc_TMP_ROOTFS} ${lxc_CONTAINER_ROOTFS} failed"
+	lxc-create -n ${lxc_CONTAINER_NAME} -f ${lxc_TMP_CONFIGDIR}/config || die "Failed to create '${lxc_CONTAINER_NAME}'"
+}
+
+f_list() {
+	ls -lah ${lxc_GLOBAL_CACHE_HOME}
+}
+
+f_destroy() {
+	echo "Not implemented, rm directly from ${lxc_GLOBAL_CACHE_HOME}"
 }
 
 f_debuginfo() {
@@ -65,8 +94,10 @@ f_debuginfo() {
 }
 
 case $1 in
-	create) f_create ;;
-	debuginfo) f_debuginfo ;;	
+	create) 	f_create ;;
+	list)		f_list ;;
+	destroy)	f_destroy ;;
+	debuginfo)	f_debuginfo ;;	
 	*) localusage ;;
 esac
 

@@ -12,8 +12,21 @@ usage() {
 	exit 1
 }
 
+d_green() {
+	echo -ne "${color_Green}${1}${color_None}"
+}
+
+d_red() {
+        echo -ne "${color_Red}${1}${color_None}"
+}
+
+d_yellow() {
+	echo -ne "${color_Yellow}${1}${color_None}"
+}
+
 die() {
-	echo -ne "Error : ${color_Red}$1${color_None}\n" 1>&2
+	echo -ne "Error : "
+	d_red "$1\n" 1>&2
 	exit 1
 }
 
