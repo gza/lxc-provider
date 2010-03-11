@@ -1,11 +1,24 @@
 #!/bin/bash
+
+# init.sh
+# Karmic specific
+# tweek upstart to start in a container
+
+#Load functions
 . ${lxc_PATH_LIBEXEC}/functions.sh
 
-#@TODO : make some post checks
+#var checkings
 needed_var_check "lxc_TMP_ROOTFS"
-ROOTFS=${lxc_TMP_ROOTFS}
 
-[[ -d $ROOTFS/etc/ ]] || die "$ROOTFS/etc/ dir not found"
+#Shortcuts
+rootfs=${lxc_TMP_ROOTFS}
+
+#rootfs checking
+[[ -f "${rootfs}/etc/lxc-provider.tag" ]] || die "${rootfs} is not a tagged rootfs"
+
+#Let's go
+
+#First divert (eg delete but dpkg friendly) some problematic init conf
 
 init_to_divert="
 /etc/init/control-alt-delete.conf
@@ -26,13 +39,17 @@ init_to_divert="
 /etc/init/networking.conf
 "
 
-for File in $init_to_divert
+for initfile in $init_to_divert
 do
-	chroot ${ROOTFS} dpkg-divert --rename "$File"
+	chroot ${rootfs} dpkg-divert --rename "$initfile"
+	[[ -f $initfile ]] && die "$initfile not diverted"
+	d_green "$initfile diverted\n"
 done
 
-cat > ${ROOTFS}/etc/init/lxc.conf <<EOF
-# lxc - provide some workaround to make upstart to work with lxc
+#Put our workaround for initial mount
+cat > "${rootfs}/etc/init/lxc.conf" <<EOF
+#lxc-provider
+# provide some workaround to make upstart to work with lxc
 # Guillaume ZITTA
 
 start on startup
@@ -46,7 +63,16 @@ script
 end script
 EOF
 
-cat > ${ROOTFS}/etc/init/networking.conf << EOF
+if egrep -q '#lxc-provider' "${rootfs}/etc/init/lxc.conf"
+then
+	d_green "upstart conffile lxc.conf added\n"
+else
+	die "falied to add ${rootfs}/etc/init/lxc.conf"
+fi
+
+#Put our workaround for network start
+cat > "${rootfs}/etc/init/networking.conf" << EOF
+#lxc-provider 
 # networking - configure virtual network devices
 #
 # This task causes virtual network devices that do not have an associated
@@ -61,6 +87,12 @@ task
 exec ifup -a
 EOF
 
-echo "upstart initiated: not verified"
+if egrep -q '#lxc-provider' "${rootfs}/etc/init/networking.conf"
+then
+        d_green "upstart conffile networking.conf added\n"
+else
+        die "falied to add ${rootfs}/etc/init/networking.conf"
+fi
+
 exit 0
 

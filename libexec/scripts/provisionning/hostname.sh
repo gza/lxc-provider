@@ -1,12 +1,29 @@
 #!/bin/bash
 
-#update_hostname.sh
+# hostname.sh
+# This script creates /etc/hostname
+
+#Load functions
 . ${lxc_PATH_LIBEXEC}/functions.sh
 
+#vars checkings
 needed_var_check "lxc_TMP_ROOTFS lxc_CONTAINER_NAME"
-ROOTFS=${lxc_TMP_ROOTFS}
-[[ -d "${ROOTFS}/etc" ]] || die "unable to find ${ROOTFS}/etc"
 
-cat <<EOF > ${ROOTFS}/etc/hostname
+#Shortcuts
+rootfs=${lxc_TMP_ROOTFS}
+
+#rootfs checking
+[[ -f "${rootfs}/etc/lxc-provider.tag" ]] || die "${rootfs} is not a tagged rootfs"
+
+cat <<EOF > "${rootfs}/etc/hostname"
 ${lxc_CONTAINER_NAME}
 EOF
+
+if egrep -q "${lxc_CONTAINER_NAME}" "${rootfs}/etc/hostname"
+then
+	d_green "hostname setted\n"
+else
+	die "unable to set hostname in ${rootfs}/etc/hostname"
+fi
+
+exit 0

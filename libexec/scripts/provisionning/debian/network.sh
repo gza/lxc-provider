@@ -1,20 +1,35 @@
 #!/bin/bash
 
-#debian.networking.sh
+# network.sh for debian
+# This script sets network configuration
+#TODO: add multiple interface capability
+#TODO: add non ethernet interface support
+
+#Load functions
 . ${lxc_PATH_LIBEXEC}/functions.sh
 
+#vars checkings
 needed_var_check "lxc_TMP_ROOTFS lxc_NET_GATEWAY lxc_NET_eth0_NETMASK lxc_NET_eth0_MTU lxc_CONTAINER_NAME"
-ROOTFS=${lxc_TMP_ROOTFS}
+
+#Shortcuts
+rootfs=${lxc_TMP_ROOTFS}
+
+#rootfs checking
+[[ -f "${rootfs}/etc/lxc-provider.tag" ]] || die "${rootfs} is not a tagged rootfs"
+
+#Let's see if we can deduce IP from name resolution
 if [[ -z ${lxc_CONTAINER_IP} ]]
 then
 	lxc_CONTAINER_IP=$(getent hosts ${lxc_CONTAINER_NAME} | awk 'NR==1 { print $1 }')
 	[[ "x${lxc_CONTAINER_IP}" == "x" ]] && die "IP address not provided and enable to find it from hostname"
-	echo "Found IP address ${lxc_CONTAINER_IP}"
+	d_green "Found IP address ${lxc_CONTAINER_IP}\n"
 fi
 
-[[ -d ${ROOTFS}/etc/network ]] || die "enable to find ${ROOTFS}/etc/network"
+#/etc/network/interfaces file setup
+[[ -d ${rootfs}/etc/network ]] || die "enable to find ${rootfs}/etc/network"
 
-cat <<EOF > ${ROOTFS}/etc/network/interfaces
+cat <<EOF > "${rootfs}/etc/network/interfaces"
+#lxc-provider
 auto lo
 iface lo inet loopback
 
@@ -26,12 +41,36 @@ gateway ${lxc_NET_GATEWAY}
 mtu ${lxc_NET_eth0_MTU}
 EOF
 
-if [[ ! -d "${ROOTFS}/var/run/network" ]] 
+if egrep -q '#lxc-provider' "${rootfs}/etc/network/interfaces"
 then
-	mkdir -p "${ROOTFS}/var/run/network" || die "unable to create ${ROOTFS}/var/run/network dir"
+	d_green "interfaces conf done\n"
+else
+	die "there was a problem creating ${rootfs}/etc/network/interfaces"
 fi
 
-cat <<EOF > ${ROOTFS}/etc/hosts
+#Some releases needs this to be created
+if [[ ! -d "${rootfs}/var/run/network" ]] 
+then
+	if mkdir -p "${rootfs}/var/run/network"
+	then
+		d_green "${rootfs}/var/run/network created\n"
+	else
+		die "unable to create ${rootfs}/var/run/network dir"
+	fi
+fi
+
+#Initial /etc/hosts
+cat <<EOF > "${rootfs}/etc/hosts"
+#lxc-provider
 127.0.0.1 localhost
 ${lxc_CONTAINER_IP} ${lxc_CONTAINER_NAME}
 EOF
+
+if egrep -q '#lxc-provider' "${rootfs}/etc/hosts"
+then
+        d_green "initial hosts file done\n"
+else
+        die "there was a problem creating ${rootfs}/etc/hosts"
+fi
+
+exit 0

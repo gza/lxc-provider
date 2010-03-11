@@ -1,15 +1,25 @@
 #!/bin/bash
 
-#create_lxc_conf.sh
-. ${lxc_PATH_LIBEXEC}/functions.sh
+# lxc_conf.sh
 #@TODO make interface name configurable
+#@TODO Let's "cgroup device part" forceable (if repository is not a lxc host)
+
+#Load functions
+. ${lxc_PATH_LIBEXEC}/functions.sh
+
+#var checkings
 needed_var_check "lxc_TMP_CONFIGDIR lxc_CONTAINER_NAME lxc_CONTAINER_ROOTFS lxc_NET_eth0_BRIDGE lxc_NET_eth0_MTU"
 
+#Shortcuts
 fstab="${lxc_TMP_CONFIGDIR}/fstab"
 config="${lxc_TMP_CONFIGDIR}/config"
+
+#create an empty fstab
 touch $fstab
 
+#create first part of the config
 cat <<EOF > $config
+#lxc-provider
 lxc.utsname = ${lxc_CONTAINER_NAME}
 lxc.tty = 4
 lxc.pts = 1024
@@ -22,6 +32,14 @@ lxc.mount = $fstab
 lxc.rootfs = ${lxc_CONTAINER_ROOTFS}
 EOF
 
+if [[ -f "$config" ]]
+then
+	d_green "First part of config file done\n"
+else
+	die "unable to set $config"
+fi
+
+#This part is made if some needed kernel opts are setted
 if lxc-checkconfig | grep -q 'Cgroup device:.*enabled';
 then
         cat << EOF >> $config
@@ -42,6 +60,14 @@ lxc.cgroup.devices.allow = c 5:2 rwm
 # rtc
 lxc.cgroup.devices.allow = c 254:0 rwm
 EOF
-
+	if egrep -q "lxc.cgroup.devices.allow" $config
+	then
+		d_green "Cgroup device specific part of config done\n"
+	else
+		die "enable to set Cgroup device specific part of $config"
+	fi
+else
+	f_yellow "Cgroup device not enabled"
 fi
 
+exit 0

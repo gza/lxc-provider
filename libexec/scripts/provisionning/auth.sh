@@ -1,26 +1,52 @@
 #!/bin/bash
 
-#passwd.sh
+# auth.sh
+# This script sets root password and authorized_keys
+
+#Load functions
 . ${lxc_PATH_LIBEXEC}/functions.sh
 
-needed_var_check "lxc_TMP_ROOTFS lxc_AUTH_PASSWD lxc_AUTH_SSHPUBKEY lxc_AUTH_NOPASSWD "
-ROOTFS=${lxc_TMP_ROOTFS}
+#var checkings
+needed_var_check "lxc_TMP_ROOTFS lxc_AUTH_PASSWORD lxc_AUTH_SSHPUBKEY lxc_AUTH_PASSWORDLESS"
 
-[[ -d "${ROOTFS}/etc" ]] || die "unable to find ${ROOTFS}/etc"
+#Shortcuts
+rootfs=${lxc_TMP_ROOTFS}
 
-if echo "${lxc_AUTH_NOPASSWD}" | grep -iq '^yes$'
+#rootfs checking
+[[ -f "${rootfs}/etc/lxc-provider.tag" ]] || die "${rootfs} is not a tagged rootfs"
+
+if echo "${lxc_AUTH_PASSWORDLESS}" | grep -iq '^yes$'
 then
-	sed -i "s|\(root:\)x\(:0:0:root:.*:.*\)|\1*\2|" "${ROOTFS}/etc/passwd"
+	sed -i "s|\(root:\)x\(:0:0:root:.*:.*\)|\1*\2|" "${rootfs}/etc/passwd"
+	#Verification
+	egrep -q '^root:[*]:' "${rootfs}/etc/passwd" || die "Unable to set passwdless login for root in ${rootfs}/etc/passwd"
+	d_green "Passwordless login for root done\n"
+else
+	if echo "${lxc_AUTH_PASSWORD}" | grep -q '$1$.*'
+	then
+	        sed -i "s|\(root:\).*\(:.*:0:.*:.:::\)|\1${lxc_AUTH_PASSWORD}\2|" "${rootfs}/etc/shadow"
+		egrep -q '^root:[$]1' "${rootfs}/etc/shadow" || die "Unable to set password for root in ${rootfs}/etc/shadow"
+		d_green "Password setting for root done\n"
+	else
+		die "lxc_AUTH_PASSWORDLESS is set to no and lxc_AUTH_PASSWORD is not a valid crypted password"
+	fi
 fi
 
 if [[ -f "${lxc_AUTH_SSHPUBKEY}" ]]
 then
-	mkdir -p "${ROOTFS}/root/.ssh"
-	cat "${lxc_AUTH_SSHPUBKEY}" >> "${ROOTFS}/root/.ssh/authorized_keys"
-	chmod 600 "${ROOTFS}/root/.ssh/authorized_keys"
+	mkdir -p "${rootfs}/root/.ssh"
+	cat "${lxc_AUTH_SSHPUBKEY}" >> "${rootfs}/root/.ssh/authorized_keys"
+	chmod 600 "${rootfs}/root/.ssh/authorized_keys"
+	egrep -q '^ssh' "${rootfs}/root/.ssh/authorized_keys" || die "unable to set ${rootfs}/root/.ssh/authorized_keys"
+	d_green "authorized_keys setting done\n"
+else
+	if [[ "${lxc_AUTH_SSHPUBKEY}" == "none" ]]
+	then
+		d_yellow "No authorized_keys required"
+		exit 0
+	else
+		die "SSH pubkey : ${lxc_AUTH_SSHPUBKEY} no found"
+	fi
 fi
 
-if echo "${lxc_AUTH_PASSWD}" | grep -q '$1$.*'
-then
-	sed -i "s|\(root:\).*\(:.*:0:.*:.:::\)|\1${lxc_AUTH_PASSWD}\2|" "${ROOTFS}/etc/shadow"
-fi
+exit 0

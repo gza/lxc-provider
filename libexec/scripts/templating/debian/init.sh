@@ -1,13 +1,23 @@
 #!/bin/bash
 . ${lxc_PATH_LIBEXEC}/functions.sh
 
-#@TODO : make some post checks
+# init.sh
+# This script set init system
+#Load functions
+. ${lxc_PATH_LIBEXEC}/functions.sh
+
+#var checkings
 needed_var_check "lxc_TMP_ROOTFS"
-ROOTFS=${lxc_TMP_ROOTFS}
 
-[[ -d $ROOTFS/etc/ ]] || die "$ROOTFS/etc/ dir not found"
+#Shortcuts
+rootfs=${lxc_TMP_ROOTFS}
 
-cat <<EOF > $ROOTFS/etc/inittab
+#rootfs checking
+[[ -f "${rootfs}/etc/lxc-provider.tag" ]] || die "${rootfs} is not a tagged rootfs"
+
+#inittab creation
+cat <<EOF > "${rootfs}/etc/inittab"
+#lxc-provider
 id:3:initdefault:
 si::sysinit:/etc/init.d/rcS
 l0:0:wait:/etc/init.d/rc 0
@@ -26,5 +36,11 @@ c3:12345:respawn:/sbin/getty 38400 tty3 linux
 c4:12345:respawn:/sbin/getty 38400 tty4 linux
 EOF
 
-echo "inittab initiated: not verified"
+if egrep -q '#lxc-provider' "${rootfs}/etc/inittab"
+then
+	d_green "init initiated\n"
+else
+	die "failed to initiate init\n"
+fi
+
 exit 0

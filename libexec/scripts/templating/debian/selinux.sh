@@ -1,12 +1,23 @@
 #!/bin/bash
+
+# selinux.sh
+# This script disables selinux
+
+#Load functions
 . ${lxc_PATH_LIBEXEC}/functions.sh
 
-#Disables selinux in the VPS
+#var checkings
 needed_var_check "lxc_TMP_ROOTFS"
-ROOTFS=${lxc_TMP_ROOTFS}
 
-mkdir -p $ROOTFS/selinux || die "Unable to make $ROOTFS/selinux dir"
-echo 0 > $ROOTFS/selinux/enforce || die "Unable to create $ROOTFS/selinux/enforce file"
+#Shortcuts
+rootfs=${lxc_TMP_ROOTFS}
 
-echo "selinux disabled : OK"
+#rootfs checking
+[[ -f "${rootfs}/etc/lxc-provider.tag" ]] || die "${rootfs} is not a tagged rootfs"
+
+#Disable selinux
+mkdir -p ${rootfs}/selinux || die "Unable to make ${rootfs}/selinux dir"
+echo 0 > ${rootfs}/selinux/enforce || die "Unable to create ${rootfs}/selinux/enforce file"
+
+d_green "selinux disabled\n"
 exit 0
