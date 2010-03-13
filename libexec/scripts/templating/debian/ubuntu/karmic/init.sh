@@ -37,6 +37,7 @@ init_to_divert="
 /etc/init/tty6.conf
 /etc/init/upstart-udev-bridge.conf
 /etc/init/networking.conf
+/etc/init/network-interface.conf
 "
 
 for initfile in $init_to_divert
@@ -53,6 +54,9 @@ cat > "${rootfs}/etc/init/lxc.conf" <<EOF
 # Guillaume ZITTA
 
 start on startup
+
+task
+
 script
 	>/etc/mtab
 	mount -a
@@ -84,7 +88,12 @@ start on local-filesystems
 
 task
 
-exec ifup -a
+script
+        mkdir -p /var/run/network || true
+        ifdown -a
+        ifup -a
+end script
+
 EOF
 
 if egrep -q '#lxc-provider' "${rootfs}/etc/init/networking.conf"
