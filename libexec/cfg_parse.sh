@@ -18,7 +18,7 @@ cur_dir="${lxc_PATH_ETC}/${mode}"
 for step in $(echo ${query} | sed 's|/| |g;s|^|. |g')
 do
 	[[ "$step" == '.' ]] || cur_dir="${cur_dir}/${step}"
-	for conffile in $cur_dir/*.conf
+	for conffile in $(find $cur_dir/*.conf 2>/dev/null)
 	do
 		. $conffile
 	done
