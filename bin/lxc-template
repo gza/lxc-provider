@@ -1,5 +1,8 @@
 #!/bin/bash
 
+export LANGUAGE=""
+export LC_ALL=""
+export LANG=""
 
 Conf=/lxc/etc/general.conf
 . ${Conf}
