@@ -17,7 +17,7 @@ rootfs=${lxc_TMP_ROOTFS}
 [[ -f "${rootfs}/etc/lxc-provider.tag" ]] || die "${rootfs} is not a tagged rootfs"
 
 #Let's go
-if mkdir -p "${rootfs}/dev/.initramfs/var/runnetwork"
+if mkdir -p "${rootfs}/dev/.initramfs/varrun/network"
 then
 	d_green "/var/run/network workaround done\n"
 else
