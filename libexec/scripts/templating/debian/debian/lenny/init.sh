@@ -34,6 +34,8 @@ c1:12345:respawn:/sbin/getty 38400 tty1 linux
 c2:12345:respawn:/sbin/getty 38400 tty2 linux
 c3:12345:respawn:/sbin/getty 38400 tty3 linux
 c4:12345:respawn:/sbin/getty 38400 tty4 linux
+c5:12345:respawn:/sbin/getty 38400 tty5 linux
+c6:12345:respawn:/sbin/getty 38400 tty6 linux
 EOF
 
 if egrep -q '#lxc-provider' "${rootfs}/etc/inittab"
