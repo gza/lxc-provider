@@ -3,7 +3,7 @@
 #general conf file
 conf=$1
 
-#mode=templating or provisionning
+#mode=templating or provisioning
 mode=$2
 
 #query

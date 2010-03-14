@@ -38,7 +38,7 @@ while getopts "a:i:n:h" option; do
         esac
 done
 
-eval "$(${lxc_PATH_LIBEXEC}/cfg_parse.sh ${Conf} provisionning ${template})"
+eval "$(${lxc_PATH_LIBEXEC}/cfg_parse.sh ${Conf} provisioning ${template})"
 [[ -n $ARCH ]] && lxc_ARCH=$ARCH
 
 
@@ -53,8 +53,8 @@ IFS=$oldIFS
 lxc_RELEASE=${container_array[2]}
 
 lxc_CONTAINER_ROOTFS="${lxc_PATH_ROOTFS}/${lxc_CONTAINER_NAME}"
-lxc_TMP_ROOTFS="${lxc_PATH_TMP}/provisionning/${lxc_CONTAINER_NAME}"
-lxc_TMP_CONFIGDIR="${lxc_PATH_TMP}/provisionning/${lxc_CONTAINER_NAME}-config"
+lxc_TMP_ROOTFS="${lxc_PATH_TMP}/provisioning/${lxc_CONTAINER_NAME}"
+lxc_TMP_CONFIGDIR="${lxc_PATH_TMP}/provisioning/${lxc_CONTAINER_NAME}-config"
 lxc_TEMPLATE_ROOTFS="${lxc_PATH_TEMPLATE}/${container}/${lxc_ARCH}"
 export ${!lxc_*}
 
@@ -68,7 +68,7 @@ f_create() {
 	[[ -d ${lxc_TMP_CONFIGDIR} ]] || rm -rf ${lxc_TMP_CONFIGDIR}
 	mkdir -p ${lxc_TMP_CONFIGDIR}
 	
-	for script in $(${lxc_PATH_LIBEXEC}/get_scripts.sh ${Conf} provisionning ${container})
+	for script in $(${lxc_PATH_LIBEXEC}/get_scripts.sh ${Conf} provisioning ${container})
 	do
 		echo "Executing ${script}"
 		${script} || die "${script} failed"
