@@ -37,7 +37,7 @@ init_to_divert="
 for initfile in $init_to_divert
 do
 	chroot ${rootfs} dpkg-divert --rename "$initfile"
-	[[ -f $initfile ]] && die "$initfile not diverted"
+	[[ -f ${rootfs}/$initfile ]] && die "$initfile not diverted"
 	d_green "$initfile diverted\n"
 done
 
