@@ -30,15 +30,9 @@ init_to_divert="
 /etc/init/mountall-shell.conf
 /etc/init/procps.conf
 /etc/init/rsyslog-kmsg.conf
-/etc/init/tty2.conf
-/etc/init/tty3.conf
-/etc/init/tty4.conf
-/etc/init/tty5.conf
-/etc/init/tty6.conf
 /etc/init/upstart-udev-bridge.conf
 /etc/init/networking.conf
-/etc/init/network-interface.conf
-"
+/etc/init/network-interface.conf"
 
 for initfile in $init_to_divert
 do
