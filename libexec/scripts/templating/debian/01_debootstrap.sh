@@ -10,9 +10,8 @@ needed_var_check "lxc_TMP_ROOTFS lxc_ARCH lxc_RELEASE lxc_MIRROR lxc_PKGSUPP lxc
 #Shortcuts
 rootfs="${lxc_TMP_ROOTFS}"
 
-#Let's do some checks
-[[ -d ${rootfs} ]] || die "cannot find ${rootfs} dir"
-[[ "$(realpath "${rootfs}/")" == "/" ]] && die "tring to deploy to / !!!!\n i wont do this"
+#rootfs checking
+[[ -f "${rootfs}/etc/lxc-provider.tag" ]] || die "${rootfs} is not a tagged rootfs"
 
 #Let's go
 cmd="debootstrap --verbose --variant=minbase --arch=${lxc_ARCH} --include ${lxc_PKGSUPP} ${lxc_RELEASE} ${rootfs} ${lxc_MIRROR}"
@@ -50,6 +49,4 @@ else
 	die "Failed to download the rootfs, aborting. Code: $RET"
 fi
 
-#We tag the template in order to secure future operations
-touch "${rootfs}/etc/lxc-provider.tag" || die "unable to create tag : ${rootfs}/etc/lxc-provider.tag"
 exit 0
