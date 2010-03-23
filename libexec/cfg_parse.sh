@@ -1,31 +1,43 @@
 #!/bin/bash
-#@TODO do some checks
-#general conf file
-conf=$1
 
-#mode=templating or provisioning
-mode=$2
+#cfg_parse.sh 
+#This script parses the configurations files into the tree corresponding to a query string
+#
+#Usage : cfg_parse.sh path_to_scripts_home query/string
 
-#query
-query=$3
+path=$1
+#query string, example : debian/ubuntu/hardy
+query=$2
 
-conf="/lxc/etc/general.conf"
+#Load some functions
+. /lxc/libexec/functions.sh
 
-. ${conf}
+#Does some checks
+[[ -d ${path} ]] || die "'${path}' is not a dir"
+[[ "X${query}" == "X" ]] && die "please provide a query string, example debian/ubuntu/hardy"
 
-cur_dir="${lxc_PATH_ETC}/${mode}"
+#initiate start point of conf
+cur_dir="${path}"
+[[ -d ${cur_dir} ]] || "configuration start point : ${cur_dir} does not exists"
 
-for step in $(echo ${query} | sed 's|/| |g;s|^|. |g')
+#Makes a list of successive dirs to parse, example : ". debian ubuntu hardy"
+directories=$(echo ${query} | sed 's|/| |g;s|^|. |g')
+
+for dir in $directories
 do
-	[[ "$step" == '.' ]] || cur_dir="${cur_dir}/${step}"
+	#We add current dir to the path unless it is "."
+	[[ "$dir" == '.' ]] || cur_dir="${cur_dir}/${dir}"
+
+	echo "parsing $cur_dir" 1>&2
 	for conffile in $(find $cur_dir/*.conf 2>/dev/null)
 	do
 		. $conffile
 	done
 done
 
+#displaying result
 for var in ${!lxc_*}
 do
-	echo export ${var}=\'$(eval echo '$'$var)\'
+	echo 'export '${var}'='\'${!var}\'
 done
 

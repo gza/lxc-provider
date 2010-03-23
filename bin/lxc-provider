@@ -38,20 +38,10 @@ while getopts "a:i:n:h" option; do
         esac
 done
 
-eval "$(${lxc_PATH_LIBEXEC}/cfg_parse.sh ${Conf} provisioning ${template})"
+eval "$(${lxc_PATH_LIBEXEC}/cfg_parse.sh ${lxc_PATH_ETC}/provisioning ${container})"
 [[ -n $ARCH ]] && lxc_ARCH=$ARCH
 
-
-
-#Exploding string
-string=${container}
-oldIFS=$IFS
-IFS=/
-container_array=( $string )
-IFS=$oldIFS
-
-lxc_RELEASE=${container_array[2]}
-
+#Compose some paths
 lxc_CONTAINER_ROOTFS="${lxc_PATH_ROOTFS}/${lxc_CONTAINER_NAME}"
 lxc_TMP_ROOTFS="${lxc_PATH_TMP}/provisioning/${lxc_CONTAINER_NAME}"
 lxc_TMP_CONFIGDIR="${lxc_PATH_TMP}/provisioning/${lxc_CONTAINER_NAME}-config"
@@ -68,7 +58,7 @@ f_create() {
 	[[ -d ${lxc_TMP_CONFIGDIR} ]] || rm -rf ${lxc_TMP_CONFIGDIR}
 	mkdir -p ${lxc_TMP_CONFIGDIR}
 	
-	for script in $(${lxc_PATH_LIBEXEC}/get_scripts.sh ${Conf} provisioning ${container})
+	for script in $(${lxc_PATH_LIBEXEC}/get_scripts.pl ${lxc_PATH_SCRIPTS}/provisioning ${container})
 	do
 		echo "Executing ${script}"
 		${script} || die "${script} failed"

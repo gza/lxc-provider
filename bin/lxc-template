@@ -26,25 +26,18 @@ localusage() {
 	exit 0
 }
 
-eval "$(${lxc_PATH_LIBEXEC}/cfg_parse.sh ${Conf} templating ${template})" 
+#Load conf
+eval "$(${lxc_PATH_LIBEXEC}/cfg_parse.sh ${lxc_PATH_ETC}/templating ${template})" 
 
+#Compose some path
 lxc_TMP_ROOTFS="${lxc_PATH_TMP}/templating/${template}/${lxc_ARCH}"
-
-#Exploding string
-string=${template}
-oldIFS=$IFS
-IFS=/
-template_array=( $string )
-IFS=$oldIFS
-
-lxc_RELEASE=${template_array[2]}
 lxc_TEMPLATE_ROOTFS="${lxc_PATH_TEMPLATE}/${template}/${lxc_ARCH}"
 
-export lxc_TMP_ROOTFS lxc_RELEASE lxc_TEMPLATE_ROOTFS
+export lxc_TMP_ROOTFS lxc_TEMPLATE_ROOTFS
 
 f_create() {
 	mkdir -p ${lxc_TMP_ROOTFS}
-	for script in $(${lxc_PATH_LIBEXEC}/get_scripts.sh ${Conf} templating ${template})
+	for script in $(${lxc_PATH_LIBEXEC}/get_scripts.pl ${lxc_PATH_SCRIPTS}/templating ${template})
 	do
 		echo "Executing ${script}"
 		${script} || die "${script} failed"
