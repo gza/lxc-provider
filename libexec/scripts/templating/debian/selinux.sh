@@ -19,5 +19,5 @@ rootfs=${lxc_TMP_ROOTFS}
 mkdir -p ${rootfs}/selinux || die "Unable to make ${rootfs}/selinux dir"
 echo 0 > ${rootfs}/selinux/enforce || die "Unable to create ${rootfs}/selinux/enforce file"
 
-d_green "selinux disabled\n"
+log "selinux disabled"
 exit 0

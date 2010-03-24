@@ -40,9 +40,9 @@ EOF
 
 if egrep -q '#lxc-provider' "${rootfs}/etc/inittab"
 then
-	d_green "init initiated\n"
+	log "init initiated"
 else
-	die "failed to initiate init\n"
+	die "failed to initiate init"
 fi
 
 exit 0

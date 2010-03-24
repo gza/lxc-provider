@@ -28,11 +28,11 @@ for svc in ${lxc_SVC_DISABLE}
 do
 	if chroot ${rootfs} /usr/sbin/update-rc.d -f "${svc}" remove
 	then
-		d_green "svc ${svc} disabled\n"
+		log "svc ${svc} disabled"
 	else
 		die "/usr/sbin/update-rc.d -f ${svc} remove : failed"
 	fi
 done
 
-d_green "Services management done\n"
+log "Services management done"
 exit 0

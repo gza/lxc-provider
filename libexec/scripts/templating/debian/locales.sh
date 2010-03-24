@@ -26,7 +26,7 @@ EOF
 
 if egrep -q '#lxc-provider' "${rootfs}/etc/default/locale"
 then
-	d_green "locale setted\n"
+	log "locale setted"
 else
 	die "unable to set locale"
 fi
@@ -35,7 +35,7 @@ fi
 
 if chroot ${rootfs} /usr/sbin/dpkg-reconfigure -fnoninteractive locales
 then
-	d_green "locales reconfigured: OK\n"
+	log "locales reconfigured: OK"
 else
 	die "/usr/sbin/dpkg-reconfigure -fnoninteractive locales : failed"
 fi

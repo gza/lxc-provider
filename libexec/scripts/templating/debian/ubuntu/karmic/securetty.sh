@@ -26,7 +26,7 @@ echo "UNKNOWN" >> "${rootfs}/etc/securetty"
 #Post-check
 if egrep -q 'UNKNOWN' "${rootfs}/etc/securetty"
 then
-	d_green "rootlogin enabled on : not verified\n"
+	log "rootlogin enabled on : not verified"
 else
 	die "Unable to enable root login"
 fi

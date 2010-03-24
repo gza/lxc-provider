@@ -26,7 +26,7 @@ EOF
 #Post-check
 if egrep -q '#lxc-provider' "${rootfs}/etc/fstab"
 then
-        d_green "container's fstab done\n"
+        log "container's fstab done"
 else
         die "failed make ${rootfs}/etc/fstab"
 fi

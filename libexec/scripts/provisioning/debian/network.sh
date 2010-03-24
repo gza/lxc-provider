@@ -22,7 +22,7 @@ if [[ -z ${lxc_CONTAINER_IP} ]]
 then
 	lxc_CONTAINER_IP=$(getent hosts ${lxc_CONTAINER_NAME} | awk 'NR==1 { print $1 }')
 	[[ "x${lxc_CONTAINER_IP}" == "x" ]] && die "IP address not provided and enable to find it from hostname"
-	d_green "Found IP address ${lxc_CONTAINER_IP}\n"
+	log "Found IP address ${lxc_CONTAINER_IP}"
 fi
 
 #/etc/network/interfaces file setup
@@ -43,7 +43,7 @@ EOF
 
 if egrep -q '#lxc-provider' "${rootfs}/etc/network/interfaces"
 then
-	d_green "interfaces conf done\n"
+	log "interfaces conf done"
 else
 	die "there was a problem creating ${rootfs}/etc/network/interfaces"
 fi
@@ -53,7 +53,7 @@ if [[ ! -d "${rootfs}/var/run/network" ]]
 then
 	if mkdir -p "${rootfs}/var/run/network"
 	then
-		d_green "${rootfs}/var/run/network created\n"
+		log "${rootfs}/var/run/network created"
 	else
 		die "unable to create ${rootfs}/var/run/network dir"
 	fi
@@ -68,7 +68,7 @@ EOF
 
 if egrep -q '#lxc-provider' "${rootfs}/etc/hosts"
 then
-        d_green "initial hosts file done\n"
+        log "initial hosts file done"
 else
         die "there was a problem creating ${rootfs}/etc/hosts"
 fi

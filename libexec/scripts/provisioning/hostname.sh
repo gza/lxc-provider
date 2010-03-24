@@ -21,7 +21,7 @@ EOF
 
 if egrep -q "${lxc_CONTAINER_NAME}" "${rootfs}/etc/hostname"
 then
-	d_green "hostname setted\n"
+	log "hostname created"
 else
 	die "unable to set hostname in ${rootfs}/etc/hostname"
 fi

@@ -19,7 +19,7 @@ rootfs=${lxc_TMP_ROOTFS}
 #Let's go
 if mkdir -p "${rootfs}/dev/.initramfs/varrun/network"
 then
-	d_green "/var/run/network workaround done\n"
+	log "/var/run/network workaround done"
 else
 	die "unable to create ${rootfs}/dev/.initramfs/varrun/network"
 fi

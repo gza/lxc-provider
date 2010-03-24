@@ -28,9 +28,10 @@ do
 	#We add current dir to the path unless it is "."
 	[[ "$dir" == '.' ]] || cur_dir="${cur_dir}/${dir}"
 
-	echo "parsing $cur_dir" 1>&2
+	debug "parsing $cur_dir"
 	for conffile in $(find $cur_dir/*.conf 2>/dev/null)
 	do
+		debug "found $conffile"
 		. $conffile
 	done
 done

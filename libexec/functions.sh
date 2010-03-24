@@ -7,10 +7,33 @@ color_Cyan='\e[0;36m'
 color_Magenta='\e[0;35m'
 color_None='\e[0m'
 
+progname=$(basename $0)
+
 usage() {
 	echo "Usage $1 : $2" 1>&2
 	exit 1
 }
+
+debug() {
+	[[ -n $TERM && "${lxc_DEBUG}" == "true" ]] && echo -ne "${color_Blue}$(date) : ${progname} : debug : ${1}${color_None}\n" 1>&2
+	[[ -n ${lxc_LOGFILE} ]] && echo -ne "$(date) : ${progname} : debug : ${1}\n" >> ${lxc_LOGFILE}
+}
+
+log() {
+	[[ -n $TERM ]] && echo -ne "${color_Green}$(date) : ${progname} : log : ${1}${color_None}\n" 1>&2
+	[[ -n ${lxc_LOGFILE} ]] && echo -ne "$(date) : ${progname} : log : ${1}\n" >> ${lxc_LOGFILE}
+}
+
+warning() {
+	[[ -n $TERM ]] && echo -ne "${color_Yellow}$(date) : ${progname} : warning : ${1}${color_None}\n" 1>&2
+	[[ -n ${lxc_LOGFILE} ]] && echo -ne "$(date) : ${progname} : warning : ${1}\n" >> ${lxc_LOGFILE}
+}
+
+alert() {
+        [[ -n $TERM ]] && echo -ne "${color_Red}$(date) : ${progname} : alert : ${1}${color_None}\n" 1>&2
+	[[ -n ${lxc_LOGFILE} ]] && echo -ne "$(date) : ${progname} : alert : ${1}\n" >> ${lxc_LOGFILE}
+}
+
 
 d_green() {
 	echo -ne "${color_Green}${1}${color_None}"
@@ -25,8 +48,7 @@ d_yellow() {
 }
 
 die() {
-	echo -ne "Error : "
-	d_red "$1\n" 1>&2
+	alert "$1" 1>&2
 	exit 1
 }
 
@@ -36,7 +58,7 @@ needed_var_check() {
 	do
 		if [[ -z ${!var} ]] 
 		then
-			echo "env var $var not available" 1>&2
+			die "env var $var not available"
 			needed_var_check_failed=1
 		fi
 	done

@@ -38,7 +38,7 @@ for initfile in $init_to_divert
 do
 	chroot ${rootfs} dpkg-divert --rename "$initfile"
 	[[ -f ${rootfs}/$initfile ]] && die "$initfile not diverted"
-	d_green "$initfile diverted\n"
+	log "$initfile diverted"
 done
 
 #Put our workaround for initial mount
@@ -63,7 +63,7 @@ EOF
 
 if egrep -q '#lxc-provider' "${rootfs}/etc/init/lxc.conf"
 then
-	d_green "upstart conffile lxc.conf added\n"
+	log "upstart conffile lxc.conf added"
 else
 	die "falied to add ${rootfs}/etc/init/lxc.conf"
 fi
@@ -92,7 +92,7 @@ EOF
 
 if egrep -q '#lxc-provider' "${rootfs}/etc/init/networking.conf"
 then
-        d_green "upstart conffile networking.conf added\n"
+        log "upstart conffile networking.conf added"
 else
         die "falied to add ${rootfs}/etc/init/networking.conf"
 fi

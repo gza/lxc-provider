@@ -15,3 +15,7 @@ rootfs="${lxc_TMP_ROOTFS}"
 
 mkdir -p ${rootfs}/etc || die "unable to create ${rootfs}/etc"
 echo ${lxc_VERSION} > "${rootfs}/etc/lxc-provider.tag" || die "unable to create tag : ${rootfs}/etc/lxc-provider.tag"
+
+log "tag file created"
+
+exit 0

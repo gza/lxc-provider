@@ -18,6 +18,6 @@ rootfs=${lxc_TMP_ROOTFS}
 [[ -f "${rootfs}/etc/lxc-provider.tag" ]] || die "${rootfs} is not a tagged rootfs"
 
 cp /etc/resolv.conf "${rootfs}/etc/resolv.conf" || die "cp /etc/resolv.conf ${rootfs}/etc/resolv.conf : failed"
-d_green "resolv.conf copied from host\n"
+log "resolv.conf copied from host"
 
 exit 0

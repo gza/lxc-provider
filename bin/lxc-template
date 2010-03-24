@@ -39,7 +39,7 @@ f_create() {
 	mkdir -p ${lxc_TMP_ROOTFS}
 	for script in $(${lxc_PATH_LIBEXEC}/get_scripts.pl ${lxc_PATH_SCRIPTS}/templating ${template})
 	do
-		echo "Executing ${script}"
+		log "Executing ${script}"
 		${script} || die "${script} failed"
 	done
 	 

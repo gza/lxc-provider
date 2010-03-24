@@ -22,7 +22,7 @@ echo "UseDNS no" >> "${rootfs}/etc/ssh/sshd_config"
 
 if egrep -q "UseDNS no" "${rootfs}/etc/ssh/sshd_config"
 then
-	d_green \""UseDNS no"\"" added in sshd_config\n"
+	log \""UseDNS no"\"" added in sshd_config"
 else
 	die "unable to add "\""UseDNS no"\"" to ${rootfs}/etc/ssh/sshd_config"
 fi

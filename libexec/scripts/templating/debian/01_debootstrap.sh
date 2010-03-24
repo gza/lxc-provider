@@ -22,25 +22,25 @@ cache="${lxc_PATH_CACHE}/debootstrap/${md5}.tgz"
 
 if [[ -f $cache ]]
 then
-	d_green "debootstrap cache found, using it...\n"
+	log "debootstrap cache found, using it..."
 	tar xzf $cache -C ${rootfs}
 	ret=$?
 	used_cache="with cache"
 else
-	d_yellow "no debootstrap cache\n"
+	warning "no debootstrap cache"
 	$cmd
 	ret=$?
 fi
 
 if [[ $ret == 0 ]]
 then
-	d_green "Bootstrap done ${used_cache}\n"
+	log "Bootstrap done ${used_cache}"
 	if [[ -z ${used_cache} ]]
 	then
 		mkdir -p "${lxc_PATH_CACHE}/debootstrap"
 		if tar -C ${lxc_TMP_ROOTFS} -c -z -f $cache .
 		then	
-			d_green "debootstrap cache stored : uuid $md5\n"
+			log "debootstrap cache stored : uuid $md5"
 		else
 			die "debootstrap cache storage failed"
 		fi

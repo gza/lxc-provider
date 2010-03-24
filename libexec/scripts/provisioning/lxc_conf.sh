@@ -34,7 +34,7 @@ EOF
 
 if [[ -f "$config" ]]
 then
-	d_green "First part of config file done\n"
+	log "First part of config file done"
 else
 	die "unable to set $config"
 fi
@@ -62,12 +62,12 @@ lxc.cgroup.devices.allow = c 254:0 rwm
 EOF
 	if egrep -q "lxc.cgroup.devices.allow" $config
 	then
-		d_green "Cgroup device specific part of config done\n"
+		log "Cgroup device specific part of config done"
 	else
 		die "enable to set Cgroup device specific part of $config"
 	fi
 else
-	f_yellow "Cgroup device not enabled"
+	warning "Cgroup device not enabled"
 fi
 
 exit 0
