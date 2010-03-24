@@ -35,7 +35,10 @@ lxc_TEMPLATE_ARCHIVE="${lxc_PATH_TEMPLATE}/$(echo ${template} | sed 's|/|-|g')-$
 export ${!lxc_*}
 
 f_create() {
-	[[ -d "${lxc_TMP_ROOTFS}" ]] && die "${lxc_TMP_ROOTFS} already exists" || mkdir -p ${lxc_TMP_ROOTFS}
+	[[ -d "${lxc_TMP_ROOTFS}" ]] && die "${lxc_TMP_ROOTFS} already exists" 
+	mkdir -p ${lxc_TMP_ROOTFS} && log "${lxc_TMP_ROOTFS} created"
+
+	#Let's go
 	for script in $(${lxc_PATH_LIBEXEC}/get_scripts.pl ${lxc_PATH_SCRIPTS}/templating ${template})
 	do
 		log "Executing ${script}"
@@ -46,7 +49,8 @@ f_create() {
 	log "scripts execution done."
 	log "creating archive..."
 	[[ -f "${lxc_TEMPLATE_ARCHIVE}" ]] && warning "${lxc_TEMPLATE_ARCHIVE} exists, overwriting..."
-	tar czf "${lxc_TEMPLATE_ARCHIVE}" -C "${lxc_TMP_ROOTFS}" . && rm_rf "${lxc_TMP_ROOTFS}" || die "tar cvf ${lxc_TEMPLATE_ARCHIVE} -C "\""${lxc_TMP_ROOTFS}"\"" failed ."
+	tar czf "${lxc_TEMPLATE_ARCHIVE}" -C "${lxc_TMP_ROOTFS}" . || die "tar cvf ${lxc_TEMPLATE_ARCHIVE} -C "\""${lxc_TMP_ROOTFS}"\"" failed ."
+	rm_rf "${lxc_TMP_ROOTFS}"
 	log "archive ${lxc_TEMPLATE_ARCHIVE} created."
 }
 

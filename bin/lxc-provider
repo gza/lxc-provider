@@ -52,6 +52,7 @@ f_create() {
 	#do some checks
 	[[ -f ${lxc_TEMPLATE_ARCHIVE} ]] || die "The template ${lxc_TEMPLATE_ARCHIVE} is not available"
 	[[ -d ${lxc_CONTAINER_ROOTFS} ]] && die "Rootfs dir ${lxc_CONTAINER_ROOTFS} already exists"
+	[[ -d ${lxc_PATH_ROOTFS} ]] || die "dir where container's rootfs will be doesn't exists : ${lxc_PATH_ROOTFS}"
 
 	if [[ -d "${lxc_TMP_ROOTFS}" ]]
 	then
@@ -75,9 +76,8 @@ f_create() {
 	done
 	 
 	#OK commit cache
-	mkdir -p ${lxc_CONTAINER_ROOTFS}
-	rm_rf ${lxc_CONTAINER_ROOTFS}
 	mv "${lxc_TMP_ROOTFS}" "${lxc_CONTAINER_ROOTFS}" || die "mv ${lxc_TMP_ROOTFS} ${lxc_CONTAINER_ROOTFS} failed"
+	log "${lxc_TMP_ROOTFS} commited"
 	lxc-create -n ${lxc_CONTAINER_NAME} -f ${lxc_TMP_CONFIGDIR}/config || die "Failed to create '${lxc_CONTAINER_NAME}'"
 }
 
