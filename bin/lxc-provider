@@ -45,7 +45,7 @@ eval "$(${lxc_PATH_LIBEXEC}/cfg_parse.sh ${lxc_PATH_ETC}/provisioning ${containe
 lxc_CONTAINER_ROOTFS="${lxc_PATH_ROOTFS}/${lxc_CONTAINER_NAME}"
 lxc_TMP_ROOTFS="${lxc_PATH_TMP}/provisioning/${lxc_CONTAINER_NAME}"
 lxc_TMP_CONFIGDIR="${lxc_PATH_TMP}/provisioning/${lxc_CONTAINER_NAME}-config"
-lxc_TEMPLATE_ARCHIVE="${lxc_PATH_TEMPLATE}/$(echo ${container} | sed 's|/|-|g')-${lxc_ARCH}.tgz"
+lxc_TEMPLATE_ARCHIVE="$(ls -1 ${lxc_PATH_TEMPLATE}/$(echo ${container} | sed 's|/|-|g')-${lxc_ARCH}-* | sort | tail -n 1)"
 export ${!lxc_*}
 
 f_create() {
@@ -64,7 +64,7 @@ f_create() {
 
 	mkdir -p "${lxc_TMP_ROOTFS}" && log "${lxc_TMP_ROOTFS} created"
 	#Template extraction
-	log "extracting template..."
+	log "extracting template ${lxc_TEMPLATE_ARCHIVE} ..."
 	tar xzf "${lxc_TEMPLATE_ARCHIVE}" -C "${lxc_TMP_ROOTFS}" || die "tar xvzf "\""${lxc_TEMPLATE_ARCHIVE}"\"" -C "\""${lxc_TMP_ROOTFS}"\"
 	[[ -d ${lxc_TMP_CONFIGDIR} ]] || rm_rf ${lxc_TMP_CONFIGDIR}
 	mkdir -p ${lxc_TMP_CONFIGDIR}

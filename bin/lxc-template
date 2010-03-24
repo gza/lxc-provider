@@ -31,7 +31,7 @@ eval "$(${lxc_PATH_LIBEXEC}/cfg_parse.sh ${lxc_PATH_ETC}/templating ${template})
 
 #Compose some path
 lxc_TMP_ROOTFS="${lxc_PATH_TMP}/templating/${template}/${lxc_ARCH}"
-lxc_TEMPLATE_ARCHIVE="${lxc_PATH_TEMPLATE}/$(echo ${template} | sed 's|/|-|g')-${lxc_ARCH}.tgz"
+lxc_TEMPLATE_ARCHIVE="${lxc_PATH_TEMPLATE}/$(echo ${template} | sed 's|/|-|g')-${lxc_ARCH}-${lxc_TEMPLATE_VERSION}.tgz"
 export ${!lxc_*}
 
 f_create() {
