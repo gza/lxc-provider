@@ -9,7 +9,8 @@ use strict;
 use File::Basename;
 use Data::Dumper;
 
-my $debug=1;
+my $debug=0;
+$debug=1 if $ENV{lxc_DEBUG};
 
 #Checks args
 die "usage: $0 path_to_script_home query/string" if $#ARGV<1;
@@ -20,25 +21,24 @@ die "$ARGV[1] doesn't seems to be a good query string because $ARGV[0]/$query[0]
 my $result={};
 
 foreach my $dir ( get_tree({root=>$ARGV[0], query=>\@query}) ) {
-	print STDERR "Loading scripts from $dir\n" if $debug;
+	debug("Loading scripts from $dir");
 	load_scripts_from_dir($dir);
 }
+debug("Result data :\n".Dumper($result));
 
 display();
 
-print STDERR Dumper($result) if $debug;
-
 sub get_tree {
-	#This lists dirs by reverse order of depth
+	#This lists dirs by order of depth
 	my ($arg) = @_;
 	my @list;
 	my $CurrentDir=$arg->{root};
 	
-	unshift @list,$CurrentDir;
+	push @list,$CurrentDir;
 	foreach my $step ( @{$arg->{query}} ) {
 		$CurrentDir=$CurrentDir.'/'.$step;
 		last unless -d $CurrentDir;
-		unshift @list,$CurrentDir;
+		push @list,$CurrentDir;
 	}
 
 	return @list;
@@ -47,11 +47,11 @@ sub get_tree {
 sub load_scripts_from_dir {
 	#This lists executables on a dir and call store() for each one
 	my ($dir) = @_;
-	print STDERR "Loading scripts in dir $dir\n" if $debug;
+	debug("looking for scripts in $dir");
 	opendir ( DIR, $dir ) || die "Error in opening dir $dir\n";
 	foreach my $file (readdir(DIR)){
 		if ( -f "$dir/$file" && -x "$dir/$file" ) { 
-			print STDERR "file $dir $file\n" if $debug;
+			debug("found $file in $dir");
 			store($dir,$file);
 		}
 	}
@@ -65,22 +65,22 @@ sub store {
 	#example : /toto/tata/myscript.pl will overwrite /toto/myscript.py
 
 	my ($dir,$file) = @_;
-	print STDERR "get_scripts.pl::basename($file)\n";
+	debug("store($dir,$file)");
 	my @fileparts=split(/\./,$file);
 	if ($#fileparts == 0) {
-		print STDERR "found 1 part filename : $file\n";
+		debug("store() : found 1 part filename : $file");
 		$result->{main}->{$fileparts[0]}="$dir/$file";
 	} elsif ($#fileparts == 1) {
-		print STDERR "found 2 part filename : $file\n";
+		debug("store() : found 2 part filename : $file");
 		if ($fileparts[0] =~ /^(pre|post)/) {
-			print STDERR "found 2 part filename with post or pre : $file\n";
+			debug("store() : found 2 part filename with post or pre : $file");
 			$result->{$fileparts[0]}->{$fileparts[1]}="$dir/$file";
 		} else {
-			print STDERR "found 2 part filename without post or pre : $file\n";
+			debug("store() : found 2 part filename without post or pre : $file");
 			$result->{main}->{$fileparts[0]}="$dir/$file";
 		}
 	} elsif ($#fileparts == 2) {
-		print STDERR "found 3 part filename : $file\n";
+		debug("store() : found 3 part filename : $file");
 		$result->{$fileparts[0]}->{$fileparts[1]}="$dir/$file";
 	} else {
 		die "$file as more than 3 parts, remember filename format : (pre.|post.)?filename(.ext)?";
@@ -96,4 +96,16 @@ sub display {
 		print $result->{main}->{$filename}."\n";
 		print $result->{post}->{$filename}."\n" if $result->{post}->{$filename};
 	}
+}
+
+sub debug {
+	my ($msg) = @_;
+	my $date=`date`;
+	chomp $date;
+	print STDERR "\e[0;34m$date : get_scripts.pl : debug : $msg\e[0m\n" if $debug && $ENV{'TERM'};
+}
+
+sub log {
+	my ($msg) = @_;
+	print STDERR "$msg\n";
 }
