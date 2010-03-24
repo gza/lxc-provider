@@ -64,3 +64,14 @@ needed_var_check() {
 	done
 	[[ "${needed_var_check_failed}" == "1" ]] && die "Needed vars unavailable"
 }
+
+rm_rf() {
+	#this function rm -rf but does some checks
+	debug "rm_rf : about to delete $1"
+	dir=$1
+	real=$(realpath $dir)
+	debug "rm_rf : about to delete $1, which is ${real}"
+	[[ "X${real}" == "X/" ]] && die "I don't want to rm -rf / !!!"
+
+	rm -rf ${dir} && log "${dir} removed"
+}

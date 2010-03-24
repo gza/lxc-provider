@@ -46,7 +46,7 @@ f_create() {
 	log "scripts execution done."
 	log "creating archive..."
 	[[ -f "${lxc_TEMPLATE_ARCHIVE}" ]] && warning "${lxc_TEMPLATE_ARCHIVE} exists, overwriting..."
-	tar czf "${lxc_TEMPLATE_ARCHIVE}" -C "${lxc_TMP_ROOTFS}" . && rm -rf "${lxc_TMP_ROOTFS}" || die "tar cvf ${lxc_TEMPLATE_ARCHIVE} -C "\""${lxc_TMP_ROOTFS}"\"" failed ."
+	tar czf "${lxc_TEMPLATE_ARCHIVE}" -C "${lxc_TMP_ROOTFS}" . && rm_rf "${lxc_TMP_ROOTFS}" || die "tar cvf ${lxc_TEMPLATE_ARCHIVE} -C "\""${lxc_TMP_ROOTFS}"\"" failed ."
 	log "archive ${lxc_TEMPLATE_ARCHIVE} created."
 }
 
