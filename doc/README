@@ -1,9 +1,11 @@
 = Description =
 This suite of scripts and configuration files helps you make "ready to run" containers.
+
 = How it works =
 Deployement of new container is done in 2 steps :
  - create a template (minimal distribution ready to be containerized)
  - create the container
+
 = Install =
 I use /lxc to store containers and lxc-provider
 If you want to use another location modify (one line each) :
@@ -21,31 +23,46 @@ To install a debian lenny:
  - Check network settings in /lxc/etc/provisioning/net.conf
  - set PATH
 # export PATH="${PATH}:/lxc/bin"
+
  - Mount cgroup
 # mkdir /cgroup
 # mount -t cgroup none /cgroup
+
  - Make your ethernet bridge is up
 # brctl addbr br0
+
  - set ip address for your bridge
 # ifconfig br0 10.0.0.254 netmask 255.0.0.0
+
  - Let's make a template
-# lxc-template create debian/debian/lenny
+# lxc-template create
+When prompted, select which template to build
+
  - make the container
-# lxc-provider create debian/debian/lenny -i 10.0.0.100 -n mycontainer
+# lxc-provider create -i 10.0.0.100 -n mycontainer
+When prompted, select an available template
+
  - start the container
 # lxc-start -n mycontainer
 
+ - log in the container
+# ssh 10.0.0.100
+or
+# lxc-console -n mycontainer
+(default root password is "toor")
+
 = Available templating conf =
- - debian/debian/lenny
- - debian/ubuntu/hardy
- - debian/ubuntu/intrepid
- - debian/ubuntu/jaunty
- - debian/ubuntu/karmic
+ - debian.lenny
+ - ubuntu.hardy
+ - ubuntu.intrepid
+ - ubuntu.jaunty
+ - ubuntu.karmic
+ - ubuntu.lucid
 
 = Todo =
  - templates conf gentoo, centos
  - more tests
- - tag containers with lxc-provider version
+ - better arch handling
  - write updates procedures for containers created with older lxc-provider
  - packaging
 
