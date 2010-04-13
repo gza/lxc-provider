@@ -1,106 +1,66 @@
 #!/bin/bash
 
-export LANGUAGE=""
-export LC_ALL=""
-export LANG=""
+export LANG="C"
+
+#Assoiative arrays
+declare -A ProviderTree
+declare -A TemplateCacheFile
+
+lxc_MODE="provisioning"
 
 Conf=/lxc/etc/general.conf
 . ${Conf}
 . ${lxc_PATH_LIBEXEC}/functions.sh
 
-if [[ -z $2 ]]
-then
-	container=${lxc_DEFAULT_VPS}
-else
-	container=$2
-fi
-
 localusage() {
 	myname=$(basename $0)
 	echo "Usage:"
-	echo "${myname} create rootdistro/distro/release[/specif/../..] [-a ARCH] [-i IP] -n NAME : creates container"
-	echo "${myname} list : lists available containers"
-	echo "${myname} listconf : lists possible containers"
-	echo "${myname} destroy rootdistro/distro/release[/specif/../..] -a ARCH  : deletes template"
-	echo "${myname} debuginfo rootdistro/distro/release[/specif/../..] [-a ARCH] [-i IP] -n NAME : shows env vars used by scripts"
+	echo "${myname} create|debuginfo [-i IP] -n NAME"
+	echo -e "\tcreate : create a container"
+	echo -e "\tdebuginfo : load and display computed conf without template creation"
+	echo "${myname} list"
+	echo -e "\tlist : list available container providers (container configuration)"
 	exit 0
 }
 
-OPTIND=3
-while getopts "a:i:n:h" option; do
-        echo "$option ${OPTARG}"
+#Action control
+[[ -z $1 ]] && localusage
+c_InArray $1 create list debuginfo || localusage
+
+debug "options : $*"
+
+OPTIND=2
+while getopts "i:n:h" option; do
+        debug "option $option ${OPTARG}"
         case "$option" in
                 h) localusage ;;
                 i) lxc_CONTAINER_IP="${OPTARG}" ;;
                 n) lxc_CONTAINER_NAME="${OPTARG}" ;;
-                a) ARCH="${OPTARG}" ;;
                 *) localusage ;;
         esac
 done
 
-eval "$(${lxc_PATH_LIBEXEC}/cfg_parse.sh ${lxc_PATH_ETC}/provisioning ${container})"
-[[ -n $ARCH ]] && lxc_ARCH=$ARCH
+debug "options -n $lxc_CONTAINER_NAME"
+debug "options -i $lxc_CONTAINER_IP"
 
-#Compose some paths
-lxc_CONTAINER_ROOTFS="${lxc_PATH_ROOTFS}/${lxc_CONTAINER_NAME}"
-lxc_TMP_ROOTFS="${lxc_PATH_TMP}/provisioning/${lxc_CONTAINER_NAME}"
-lxc_TMP_CONFIGDIR="${lxc_PATH_TMP}/provisioning/${lxc_CONTAINER_NAME}-config"
-lxc_TEMPLATE_ARCHIVE="$(ls -1 ${lxc_PATH_TEMPLATE}/$(echo ${container} | sed 's|/|-|g')-${lxc_ARCH}-* | sort | tail -n 1)"
-export ${!lxc_*}
+if [[ $1 != "list" ]] 
+then
+	[[ -z $lxc_CONTAINER_NAME ]] && die "please provide container name"
+fi
 
-f_create() {
-	#do some checks
-	[[ -f ${lxc_TEMPLATE_ARCHIVE} ]] || die "The template ${lxc_TEMPLATE_ARCHIVE} is not available"
-	[[ -d ${lxc_CONTAINER_ROOTFS} ]] && die "Rootfs dir ${lxc_CONTAINER_ROOTFS} already exists"
-	[[ -d ${lxc_PATH_ROOTFS} ]] || die "dir where container's rootfs will be doesn't exists : ${lxc_PATH_ROOTFS}"
+# Load Current Templates version
+. ${lxc_PATH_ETC}/templating/version.conf || die "enable to load ${lxc_PATH_ETC}/templating/version.conf"
 
-	if [[ -d "${lxc_TMP_ROOTFS}" ]]
-	then
-		#@TODO make overwrite of the TMP_ROOTFS an option
-		warning "${lxc_TMP_ROOTFS} already exists, overwriting"
-		rm_rf "${lxc_TMP_ROOTFS}"
-		mkdir -p "${lxc_TMP_ROOTFS}" && log "${lxc_TMP_ROOTFS} created"
-	fi
+# Load Available Templates
+c_LoadAvailable "provider" ${lxc_PATH_ETC}/provisioning
 
-	mkdir -p "${lxc_TMP_ROOTFS}" && log "${lxc_TMP_ROOTFS} created"
-	#Template extraction
-	log "extracting template ${lxc_TEMPLATE_ARCHIVE} ..."
-	tar xzf "${lxc_TEMPLATE_ARCHIVE}" -C "${lxc_TMP_ROOTFS}" || die "tar xvzf "\""${lxc_TEMPLATE_ARCHIVE}"\"" -C "\""${lxc_TMP_ROOTFS}"\"
-	[[ -d ${lxc_TMP_CONFIGDIR} ]] || rm_rf ${lxc_TMP_CONFIGDIR}
-	mkdir -p ${lxc_TMP_CONFIGDIR}
-	
-	for script in $(${lxc_PATH_LIBEXEC}/get_scripts.pl ${lxc_PATH_SCRIPTS}/provisioning ${container})
-	do
-		log "Executing ${script}"
-		${script} || die "${script} failed"
-	done
-	 
-	#OK commit cache
-	mv "${lxc_TMP_ROOTFS}" "${lxc_CONTAINER_ROOTFS}" || die "mv ${lxc_TMP_ROOTFS} ${lxc_CONTAINER_ROOTFS} failed"
-	log "${lxc_TMP_ROOTFS} commited"
-	lxc-create -n ${lxc_CONTAINER_NAME} -f ${lxc_TMP_CONFIGDIR}/config || die "Failed to create '${lxc_CONTAINER_NAME}'"
-}
-
-f_list() {
-	ls -lah ${lxc_GLOBAL_CACHE_HOME}
-}
-
-f_destroy() {
-	echo "Not implemented, rm directly from ${lxc_GLOBAL_CACHE_HOME}"
-}
-
-f_debuginfo() {
-	for var in ${!lxc_*}
-	do
-		echo -e "${var}=${color_Yellow}${!var}${color_None}"
-	done
-}
+# Load Available Template Cache Archives
+t_LoadCacheArchives ${lxc_PATH_TEMPLATE} ${lxc_TEMPLATE_VERSION} amd64
 
 case $1 in
-	create) 	f_create ;;
-	list)		f_list ;;
-	destroy)	f_destroy ;;
-	debuginfo)	f_debuginfo ;;	
+	create) 	p_LoadConf ; p_Create ;;
+	list)		p_List ;;
+	debuginfo)	p_LoadConf ; c_DebugInfo ;;
 	*) localusage ;;
 esac
 

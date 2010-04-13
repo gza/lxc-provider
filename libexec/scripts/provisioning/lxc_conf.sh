@@ -11,11 +11,7 @@
 needed_var_check "lxc_TMP_CONFIGDIR lxc_CONTAINER_NAME lxc_CONTAINER_ROOTFS lxc_NET_eth0_BRIDGE lxc_NET_eth0_MTU"
 
 #Shortcuts
-fstab="${lxc_TMP_CONFIGDIR}/fstab"
 config="${lxc_TMP_CONFIGDIR}/config"
-
-#create an empty fstab
-touch $fstab
 
 #create first part of the config
 cat <<EOF > $config
@@ -28,7 +24,6 @@ lxc.network.flags = up
 lxc.network.link = ${lxc_NET_eth0_BRIDGE}
 lxc.network.name = eth0
 lxc.network.mtu = ${lxc_NET_eth0_MTU}
-lxc.mount = $fstab
 lxc.rootfs = ${lxc_CONTAINER_ROOTFS}
 EOF
 

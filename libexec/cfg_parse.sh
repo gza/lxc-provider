@@ -36,9 +36,12 @@ do
 	done
 done
 
+envfile=$(mktemp --tmpdir=/tmp lxc-provider.cfg_parse.XXXXXXX.conf)
+
 #displaying result
 for var in ${!lxc_*}
 do
-	echo 'export '${var}'='\'${!var}\'
+	echo ${var}=\'${!var}\' >> ${envfile}
 done
 
+echo ${envfile}
