@@ -1,5 +1,11 @@
 #function library
 
+#Check if bash version is > 4.0
+if [[ ${BASH_VERSINFO[0]} < 4 ]]
+then
+	die "please use bash > 4.0"
+fi
+
 #Colors
 color_Green='\e[0;32m' 
 color_Red='\e[0;31m'
@@ -11,43 +17,75 @@ color_None='\e[0m'
 
 ProgName=$(basename $0)
 
-usage() {
-	echo "Usage $1 : $2" 1>&2
-	exit 1
-}
-
 debug() {
+	#  Function: debug
+	#
+	#  Displays/logs line if lxc_DEBUG is set to true
+	#
+	#  Parameters:
+	#
+	#    $1 - Message
 	[[ -n $TERM && "${lxc_DEBUG}" == "true" ]] && echo -ne "${color_Blue}$(date) : ${ProgName} : debug : ${1}${color_None}\n" 1>&2
 	[[ -n ${lxc_LOGFILE} ]] && echo -ne "$(date) : ${ProgName} : debug : ${1}\n" >> ${lxc_LOGFILE}
 }
 
 log() {
+	#  Function: log
+	#
+	#  Displays/logs line at log level
+        #
+        #  Parameters:
+        #
+        #    $1 - Message
 	[[ -n $TERM ]] && echo -ne "${color_Green}$(date) : ${ProgName} : log : ${1}${color_None}\n" 1>&2
 	[[ -n ${lxc_LOGFILE} ]] && echo -ne "$(date) : ${ProgName} : log : ${1}\n" >> ${lxc_LOGFILE}
 }
 
 warning() {
+	#  Function: warning
+	#
+	#  Displays/logs line at warning level
+        #
+        #  Parameters:
+        #
+        #    $1 - Message
 	[[ -n $TERM ]] && echo -ne "${color_Yellow}$(date) : ${ProgName} : warning : ${1}${color_None}\n" 1>&2
 	[[ -n ${lxc_LOGFILE} ]] && echo -ne "$(date) : ${ProgName} : warning : ${1}\n" >> ${lxc_LOGFILE}
 }
 
 alert() {
+	#  Function: alert
+	#
+	#  Displays/logs line at alert level
+        #
+        #  Parameters:
+        #
+        #    $1 - Message
         [[ -n $TERM ]] && echo -ne "${color_Red}$(date) : ${ProgName} : alert : ${1}${color_None}\n" 1>&2
 	[[ -n ${lxc_LOGFILE} ]] && echo -ne "$(date) : ${ProgName} : alert : ${1}\n" >> ${lxc_LOGFILE}
 }
 
 
 die() {
+	#  Function: die
+	#
+	#  Display error message and exit
+        #
+        #  Parameters:
+        #
+        #    $1 - Message
 	alert "$1"
 	exit 1
 }
 
-if [[ ${BASH_VERSINFO[0]} < 4 ]]
-then
-	die "please use bash > 4.0"
-fi
-
 needed_var_check() {
+	#  Function: needed_var_check
+	#
+	#  Checks that needed env vars are setted
+        #
+        #  Parameters:
+        #
+        #    $1 - List if varnames
 	debug "needed_var_check($*)"
 	needed_vars=$1
 	for var in ${needed_vars}
@@ -62,7 +100,13 @@ needed_var_check() {
 }
 
 rm_rf() {
-	#this function rm -rf but does some checks
+	#  Function: rm_rf
+	#
+	#  This function rm -rf but does some checks
+        #
+        #  Parameters:
+        #
+        #    $1 - Dir to delete
 	debug "rm_rf($*)"
 	dir=$1
 	debug "rm_rf : about to delete $dir"
@@ -74,10 +118,27 @@ rm_rf() {
 }
 
 uncolor() {
+	#  Function: uncolor
+	#
+	#  displays message whitout colors
+        #
+        #  Parameters:
+        #
+        #    $* - Message to be uncolored
 	echo $* | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g"
 }
 
+### Common Functions ###
 c_InArray() {
+	#  Function: c_InArray
+	#
+	#  test if an item is in an array
+        #
+        #  Parameters:
+        #
+        #    $1 - item to search
+	#    $2-N - List in which we search for our item
+
 	debug "c_InArray($*)"
 	search=$1
 	shift
@@ -89,11 +150,15 @@ c_InArray() {
 	return 1
 }
 
-### Common Functions ###
 c_Select() {
-	#Display selection menu
-	#Usage : 
-	#c_Select "message" "liste"
+	#  Function: c_Select
+	#
+	#  Display selection menu
+        #
+        #  Parameters:
+        #
+        #    $1 - Prompt message
+	#    $2 - List of item to select
 	debug "c_Select($*)"
         PS3="$1"
         select item in $2
@@ -104,7 +169,11 @@ c_Select() {
 }
 
 c_DebugInfo() {
-	#Display lxc_* vars
+	#  Function: c_DebugInfo
+	#
+	#  Display lxc_* vars
+        #
+
 	debug "c_DebugInfo($*)"
         for var in ${!lxc_*}
         do
@@ -173,15 +242,25 @@ t_LoadCacheArchives() {
 }
 
 p_GetTemplate() {
-	#Display template corrsponding to provider
+	#  Function: p_GetTemplate
+	#
+	#  Display template corrsponding to provider
+        #
+        #  Parameters:
+        #
+        #    $1 - Provider name
+
 	debug "p_GetTemplate($*)"
 	echo $(. $lxc_PATH_ETC/provisioning/${ProviderTree[$1]}/provider.conf ; echo $lxc_TEMPLATE_NAME)
 }
 
 t_List() {
-	#Display template list
-	#green already builded template 
-	#none ready to build template
+	#  Function: t_List
+	#
+	#  Display template list
+	#  green already builded template 
+	#  none ready to build template
+
         debug "t_List($*)"
 
 	CacheList=${!TemplateCacheFile[@]}
@@ -201,9 +280,11 @@ t_List() {
 }
 
 p_List() {
-	#Display colored provider list
-	#green available template
-	#red non available template
+	#  Function: p_List
+	#
+	#  Display colored provider list
+	#  green available template
+	#  red non available template
 	debug "p_List($*)"
 	
         CacheList=${!TemplateCacheFile[@]}
@@ -224,7 +305,9 @@ p_List() {
 }
 
 t_LoadConf() {
-	#Load configuration for templating
+	#  Function: t_LoadConf
+	#
+	#  Load configuration for templating
         debug "f_LoadConf($*)"
 
         list=$(t_List)
@@ -258,7 +341,9 @@ t_LoadConf() {
 }
 
 p_LoadConf() {
-	#Load configuration for provisioning
+	#  Function: p_LoadConf
+	#
+	#  Load configuration for provisioning
         debug "f_LoadConf($*)"
 
         list=$(p_List)
@@ -305,7 +390,9 @@ p_LoadConf() {
 }
 
 t_Create() {
-	#template build
+	#  Function: t_Create
+	#
+	#  template build
         debug "t_Create($*)"
 	[[ -n $lxc_DEBUG ]] && c_DebugInfo
 
@@ -336,7 +423,9 @@ t_Create() {
 }
 
 p_Create() {
-	#provider execution
+        #  Function: p_Create
+	#
+	#  provider execution
 	debug "p_Create($*)"	
 	[[ -n $lxc_DEBUG ]] && c_DebugInfo
 
