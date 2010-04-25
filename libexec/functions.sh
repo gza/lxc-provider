@@ -227,11 +227,10 @@ t_LoadCacheArchives() {
 	#
 	#      	$1 - cachedir
 	#	$2 - version
-	#	$3 - arch	
         
 	debug "t_LoadCacheArchives($*)"
 	[[ -d $1 ]] || die "Template Cache Dir $1 does not exists"
-	for archive in $(ls -1 ${1}/*_${2}_${3}*)
+	for archive in $(ls -1 ${1}/*_${2}*)
 	do
 		template=$(basename $archive | cut -d _ -f 1)
 		TemplateCacheFile[$template]=$archive
@@ -334,8 +333,8 @@ t_LoadConf() {
         fi
 
         #Compose some path
-        lxc_TMP_ROOTFS="${lxc_PATH_TMP}/templating/${lxc_TEMPLATE_NAME}-${lxc_ARCH}"
-        lxc_TEMPLATE_ARCHIVE="${lxc_PATH_TEMPLATE}/${lxc_TEMPLATE_NAME}_${lxc_TEMPLATE_VERSION}_${lxc_ARCH}.tgz"
+        lxc_TMP_ROOTFS="${lxc_PATH_TMP}/templating/${lxc_TEMPLATE_NAME}"
+        lxc_TEMPLATE_ARCHIVE="${lxc_PATH_TEMPLATE}/${lxc_TEMPLATE_NAME}_${lxc_TEMPLATE_VERSION}.tgz"
 
         export ${!lxc_*}
 }
@@ -358,9 +357,6 @@ p_LoadConf() {
                 debug "todo stub"
                 #@TODO: create a non interactive mode and die here?
         fi
-
-        #Switch to architecture if specified
-        [[ -n $ARCH ]] && lxc_ARCH=$ARCH
 
         #Load conf for provider 
         CfgParse="${lxc_PATH_LIBEXEC}/cfg_parse.sh ${lxc_PATH_ETC}/provisioning ${ProviderTree[$lxc_PROVIDER_NAME]}"

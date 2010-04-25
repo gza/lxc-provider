@@ -10,7 +10,7 @@ path=$1
 query=$2
 
 #Load some functions
-. /lxc/libexec/functions.sh
+. ${lxc_PATH_LIBEXEC}/functions.sh
 
 #Does some checks
 [[ -d ${path} ]] || die "'${path}' is not a dir"

@@ -35,7 +35,7 @@ c_InArray $1 create list debuginfo || localusage
 c_LoadAvailable "template" ${lxc_PATH_ETC}/templating
 
 # Load Available Template Cache Archives
-t_LoadCacheArchives ${lxc_PATH_TEMPLATE} ${lxc_TEMPLATE_VERSION} amd64
+t_LoadCacheArchives ${lxc_PATH_TEMPLATE} ${lxc_TEMPLATE_VERSION}
 
 case $1 in
 	create)
