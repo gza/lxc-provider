@@ -36,7 +36,7 @@ do
 	done
 done
 
-envfile=$(mktemp --tmpdir=/tmp lxc-provider.cfg_parse.XXXXXXX.conf)
+envfile=$(mktemp --tmpdir=/tmp lxc-provider.cfg_parse.XXXXXXX)
 
 #displaying result
 for var in ${!lxc_*}
