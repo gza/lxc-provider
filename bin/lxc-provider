@@ -12,6 +12,8 @@ Conf=/etc/lxc-provider/general.conf
 . ${Conf}
 . ${lxc_PATH_LIBEXEC}/functions.sh
 
+[[ -d ${lxc_PATH_ROOTFS} ]] || die "Please configure lxc_PATH_ROOTFS in $Conf"
+
 localusage() {
 	myname=$(basename $0)
 	echo "Usage:"
