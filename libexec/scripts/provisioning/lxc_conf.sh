@@ -17,7 +17,7 @@ config="${lxc_TMP_CONFIGDIR}/config"
 cat <<EOF > $config
 #lxc-provider
 lxc.utsname = ${lxc_CONTAINER_NAME}
-lxc.tty = 4
+lxc.tty = 6
 lxc.pts = 1024
 lxc.network.type = veth
 lxc.network.flags = up
