@@ -8,7 +8,7 @@ declare -A TemplateCacheFile
 
 lxc_MODE="provisioning"
 
-Conf=/lxc/etc/general.conf
+Conf=/etc/lxc-provider/general.conf
 . ${Conf}
 . ${lxc_PATH_LIBEXEC}/functions.sh
 
