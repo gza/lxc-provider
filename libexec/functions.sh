@@ -318,8 +318,8 @@ t_LoadConf() {
                 debug "Interactive mode\n"
                 lxc_TEMPLATE_NAME=$(c_Select "Please select a template : " "$list")
         else
-                debug "todo stub"
-                #@TODO: create a non interactive mode and die here?
+                debug "lxc_TEMPLATE_WANTED found with this value : ${lxc_TEMPLATE_WANTED}"
+		lxc_TEMPLATE_NAME=${lxc_TEMPLATE_WANTED}
         fi
 
         debug "launching ${lxc_PATH_LIBEXEC}/cfg_parse.sh ${lxc_PATH_ETC}/templating ${TemplateTree[$lxc_TEMPLATE_NAME]}"
@@ -354,8 +354,8 @@ p_LoadConf() {
                 debug "Interactive mode"
                 lxc_PROVIDER_NAME=$(c_Select "Please select a provider : " "$list")
         else
-                debug "todo stub"
-                #@TODO: create a non interactive mode and die here?
+                debug "lxc_PROVIDER_WANTED found with this value : ${lxc_PROVIDER_WANTED}"
+                lxc_PROVIDER_NAME=${lxc_PROVIDER_WANTED}
         fi
 
         #Load conf for provider 
