@@ -7,7 +7,7 @@
 . ${lxc_PATH_LIBEXEC}/functions.sh
 
 #var checkings
-needed_var_check "lxc_TMP_ROOTFS"
+needed_var_check "lxc_TMP_ROOTFS lxc_DEBIAN_LOCALE lxc_DEBIAN_CHARSET"
 
 #Shortcuts
 rootfs=${lxc_TMP_ROOTFS}
@@ -17,11 +17,13 @@ rootfs=${lxc_TMP_ROOTFS}
 
 #Pre-checks
 [[ -x "${rootfs}/usr/sbin/dpkg-reconfigure" ]] || die "executable ${rootfs}/usr/sbin/dpkg-reconfigure not found"
+[[ -x "${rootfs}/usr/bin/debconf-set-selections" ]] || die "executable ${rootfs}/usr/bin/debconf-set-selections not found"
 
 #Set conf
+
 cat > "${rootfs}/etc/default/locale" << EOF
 #lxc-provider
-LANG=
+LANG=${lxc_DEBIAN_LOCALE}
 EOF
 
 if egrep -q '#lxc-provider' "${rootfs}/etc/default/locale"
@@ -31,13 +33,23 @@ else
 	die "unable to set locale"
 fi
 
-#Reconfigure locales
+cat > "${rootfs}/etc/locale.gen" << EOF
+#lxc-provider
+${lxc_DEBIAN_LOCALE} ${lxc_DEBIAN_CHARSET}
+EOF
 
-if chroot ${rootfs} /usr/sbin/dpkg-reconfigure -fnoninteractive locales
+if egrep -q '#lxc-provider' "${rootfs}/etc/locale.gen"
 then
-	log "locales reconfigured: OK"
+        log "locale.gen setted"
 else
-	die "/usr/sbin/dpkg-reconfigure -fnoninteractive locales : failed"
+        die "unable to set locale.gen"
+fi
+
+if chroot ${rootfs} locale-gen
+then
+	log "locales generation: OK"
+else
+	die "locale-gen : failed"
 fi
 
 exit 0
