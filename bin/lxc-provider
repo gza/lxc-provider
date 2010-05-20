@@ -22,6 +22,9 @@ localusage() {
 	echo -e "\tdebuginfo : load and display computed conf without template creation"
 	echo "${myname} list"
 	echo -e "\tlist : list available container providers (container configuration)"
+	echo 
+	echo "You can avoid choosing interactively by setting lxc_PROVIDER_WANTED="
+	echo -e "\tExample : lxc_PROVIDER_WANTED=debian.lenny ${myname} create"
 	exit 0
 }
 

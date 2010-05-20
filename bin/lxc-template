@@ -23,6 +23,9 @@ localusage() {
 	echo
 	echo "${myname} list"
 	echo -e "\tlist available templates"
+	echo 
+	echo "You can avoid choosing interactively by setting lxc_TEMPLATE_WANTED="
+	echo -e "\tExample : lxc_TEMPLATE_WANTED=debian.lenny ${myname} create"
 	exit 0
 }
 
