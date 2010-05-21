@@ -1,0 +1,18 @@
+#!/usr/bin/make -f
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+install:
+	$(MAKE) install root=debian/lxc-provider
+
+binary-indep: install
+
+binary-arch: install
+	dh_testdir
+	dh_testroot
+	dh_installdocs -n
+	dh_fixperms
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb	
