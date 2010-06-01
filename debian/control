@@ -5,7 +5,7 @@ Maintainer: Guillaume ZITTA <lxc@zitta.fr>
 Package: lxc-provider
 Maintainer: Guillaume ZITTA <lxc@zitta.fr>
 Architecture: all
-Version: 0.4.0_beta2
+Version: 0.4.0_beta3
 Homepage: http://sourceforge.net/apps/trac/lxc-provider/
 Description: Suite of scripts and configuration files that helps you make ready to run Linux containers 
   Suite of scripts and configuration files that helps you make ready to run Linux containers.
