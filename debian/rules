@@ -3,6 +3,10 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
+clean:
+	rm -rf debian/lxc-provider test/
+	rm -f debian/lxc-provider.debhelper.log debian/lxc-provider.substvars debian/files
+
 install:
 	$(MAKE) install root=debian/lxc-provider
 
