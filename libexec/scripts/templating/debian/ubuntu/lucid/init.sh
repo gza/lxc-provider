@@ -32,7 +32,12 @@ init_to_divert="
 /etc/init/rsyslog-kmsg.conf
 /etc/init/upstart-udev-bridge.conf
 /etc/init/networking.conf
-/etc/init/network-interface.conf"
+/etc/init/network-interface.conf
+/etc/init/plymouth.conf
+/etc/init/plymouth-log.conf
+/etc/init/plymouth-splash.conf
+/etc/init/plymouth-stop.conf
+"
 
 for initfile in $init_to_divert
 do
