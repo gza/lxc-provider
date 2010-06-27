@@ -21,6 +21,9 @@ cat <<EOF > ${rootfs}/etc/fstab
 tmpfs  /dev/shm   tmpfs  defaults  0 0
 EOF
 
+#create empty mtab
+echo > ${rootfs}/etc/mtab
+
 #Post-check
 if egrep -q '#lxc-provider' "${rootfs}/etc/fstab"
 then
